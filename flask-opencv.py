@@ -27,11 +27,11 @@ detected = False
 
 # We check for [detection_duration] milliseconds if a person is standing before the camera. This means that if in the
 # last [detection_duration] milliseconds we get a hit ratio of [detection_ratio_min], a person has been detected. If the
-# ratio drops below [detection_ratio_max], the person is no longer considered detected and we again keep track of the
+# ratio drops below [overall_ratio_min], the person is no longer considered detected and we again keep track of the
 # last [detection_duration] milliseconds.
 detection_duration = 4000
 detection_ratio_min = 90
-detection_ratio_max = 50
+overall_ratio_min = 50
 
 # We also check the last [leaving_duration] milliseconds when someone is detected. If the ratio of this duration drops
 # below the [leaving_ratio_min], we consider the person as no longer detected.
@@ -86,9 +86,10 @@ def process_face_recognition():
                 # The person becomes detected if the ratio becomes greater than the [detection_ratio_min].
                 if get_detection_hit_ratio(all_captures) > detection_ratio_min:
                     detected = True
-                # The person is no longer detected if the ratio becomes lower than the [detection_ratio_max] or has a
+                # The person is no longer detected if the ratio becomes lower than the [overall_ratio_min] or has a
                 # recent hit ratio that's lower than the [leaving_ratio_min].
-                if get_detection_hit_ratio(all_captures) < detection_ratio_max or recent_hits_ratio(now) < leaving_ratio_min:
+                if get_detection_hit_ratio(all_captures) < overall_ratio_min \
+                        or recent_hits_ratio(now) < leaving_ratio_min:
                     detected = False
 
             print_capture_row(now)
