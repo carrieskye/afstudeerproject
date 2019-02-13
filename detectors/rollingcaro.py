@@ -145,5 +145,5 @@ def detect_face(frame, cascade_path):
     if detected:
         cv2.putText(frame, "DETECTED", (15, 90), 2, 1, (87, 37, 168), 2)  # Draw the text
 
-    return frame
+    return detected, frame
 

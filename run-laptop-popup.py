@@ -8,8 +8,9 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 
 def every_frame(frame):
-    frame_with_face = detect_face(frame, cascadePath)
-    show_frame(frame_with_face)
+    person_detected, frame_with_face = detect_face(frame, cascadePath)
+    if person_detected:
+        show_frame(frame_with_face)
 
 
 stream_video(every_frame)
