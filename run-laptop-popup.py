@@ -6,6 +6,7 @@ from detectors.simple import detect_face
 #from detectors.rollingcaro import detect_face
 from reporting.popup import show_frame
 #from reporting.web import show_frame
+from classifier.random import classify
 
 # cascada to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -22,7 +23,6 @@ def every_frame(frame):
 
     # detector
     person_detected, frame_with_face = detect_face(numpy.copy(frame), cascadePath)
-    label = "detected"
 
     # if we haven't detected a person don't do anything
     if not person_detected:
@@ -44,9 +44,10 @@ def every_frame(frame):
     # no cooldown
     if cooldown_start_time is None:
         cooldown_start_time = datetime.now()
+        label = classify(frame)
         if last_label is not label:
             last_label = label
-            label_action("Detect")
+            label_action(label)
 
 
 def label_action(label: str):
