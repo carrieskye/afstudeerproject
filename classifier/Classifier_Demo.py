@@ -138,8 +138,8 @@ def classify(frame):
                 draw_label(img, (d.left(), d.top()), label)
                 resultPrediction.append(label)
 
-        #cv2.imshow("result", img)
-        #time.sleep(3)
+        cv2.imshow("result", img)
+        time.sleep(3)
         print(resultPrediction)
         key = cv2.waitKey(-1) if image_dir else cv2.waitKey(30)
 
