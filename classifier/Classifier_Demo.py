@@ -4,7 +4,7 @@ import dlib
 import numpy as np
 import argparse
 from contextlib import contextmanager
-from classifier.wide_resnet import WideResNet
+from wide_resnet import WideResNet
 import time
 from keras.utils.data_utils import get_file
 
@@ -13,17 +13,53 @@ modhash = 'fbe63257a054c1c5466cfd7bf14646d6'
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="This script detects faces from web cam input, "
+                                                 "and estimates age and gender for the detected faces.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--weight_file", type=str, default=None,
+                        help="path to weight file (e.g. weights.28-3.73.hdf5)")
     parser.add_argument("--depth", type=int, default=16,
                         help="depth of network")
     parser.add_argument("--width", type=int, default=8,
                         help="width of network")
     parser.add_argument("--margin", type=float, default=0.4,
                         help="margin around detected face for age-gender estimation")
+    parser.add_argument("--image_dir", type=str, default=None,
+                        help="target image directory; if set, images in image_dir are used instead of webcam")
     args = parser.parse_args()
     return args
 
-def startClassifier():
+def draw_label(image, point, label, font=cv2.FONT_HERSHEY_SIMPLEX,
+               font_scale=0.8, thickness=1):
+    size = cv2.getTextSize(label, font, font_scale, thickness)[0]
+    x, y = point
+    cv2.rectangle(image, (x, y - size[1]), (x + size[0], y), (255, 0, 0), cv2.FILLED)
+    cv2.putText(image, label, point, font, font_scale, (255, 255, 255), thickness, lineType=cv2.LINE_AA)
+
+
+@contextmanager
+def video_capture(*args, **kwargs):
+    cap = cv2.VideoCapture(*args, **kwargs)
+    try:
+        yield cap
+    finally:
+        cap.release()
+
+def yield_images_from_dir(image_dir):
+    image_dir = Path(image_dir)
+
+    for image_path in image_dir.glob("*.*"):
+        img = cv2.imread(str(image_path), 1)
+
+        if img is not None:
+            h, w, _ = img.shape
+            r = 640 / max(w, h)
+            yield cv2.resize(img, (int(w * r), int(h * r)))
+
+def wut():
+    print("wut prints")
+
+def doShit():
     print("hello")
     image_dir = Path("D://Users/Denis/images")
     frames = []
@@ -37,7 +73,7 @@ def startClassifier():
         r = 640 / max(w, h)
         cv2.resize(img, (int(w * r), int(h * r)))
         frames.append(img)
-    return classify(frames)
+    classify(frames)
 
     #for frame in listOfFrames:
      #   listOfLabels = classify(frame)
@@ -48,8 +84,13 @@ def classify(frame):
     args = get_args()
     depth = args.depth
     k = args.width
-    weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
+    weight_file = args.weight_file
     margin = args.margin
+    image_dir = args.image_dir
+
+    if not weight_file:
+        weight_file = get_file("weights.28-3.73.hdf5", pretrained_model, cache_subdir="pretrained_models",
+                               file_hash=modhash, cache_dir=str(Path(__file__).resolve().parent))
 
     # for face detection
     detector = dlib.get_frontal_face_detector()
@@ -92,13 +133,15 @@ def classify(frame):
 
             # draw results
             for i, d in enumerate(detected):
-                label = []
-                label.append(int(predicted_ages[i]))
-                label.append("M" if predicted_genders[i][0] < 0.5 else "F")
+                label = "{}, {}".format(int(predicted_ages[i]),
+                                        "M" if predicted_genders[i][0] < 0.5 else "F")
+                draw_label(img, (d.left(), d.top()), label)
                 resultPrediction.append(label)
 
-        #cv2.imshow("result", img)
-        #time.sleep(3)
-        #print(resultPrediction)
+        cv2.imshow("result", img)
+        time.sleep(3)
+        print(resultPrediction)
+        key = cv2.waitKey(-1) if image_dir else cv2.waitKey(30)
 
-    return resultPrediction
+        if key == 27:  # ESC
+            break
