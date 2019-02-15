@@ -1,11 +1,11 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, send_from_directory
 import cv2
 import threading
 import time
 from simple_websocket_server import WebSocketServer, WebSocket
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 
 current_frame = None
 changed = False
@@ -41,6 +41,11 @@ def index():
 @app.route('/video_viewer')
 def video_viewer():
     return Response(get_latest_frame(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/static/<path:path>')
+def send_js(path):
+    return send_from_directory('static', path)
 
 
 connections = []

@@ -1,11 +1,9 @@
 import numpy
 from datetime import datetime
 
-from cameras.laptopcam import stream_video
-from detectors.simple import detect_face
 #from detectors.rollingcaro import detect_face
-from reporting.popup import show_frame, show_detected
-#from reporting.web import show_frame, show_detected
+#from reporting.popup import show_frame, show_detected
+from reporting.web import show_frame, show_detected
 from classifier.random import classify
 
 # cascada to use with opencv to identify faces
@@ -22,7 +20,7 @@ def every_frame(frame):
     global cooldown_start_time, last_label
 
     # detector
-    person_detected, frame_with_face = detect_face(numpy.copy(frame), cascadePath)
+    person_detected, frame_with_face = True, None
 
     # if we haven't detected a person don't do anything
     if not person_detected:
@@ -54,4 +52,3 @@ def label_action(label: str):
     show_detected(label)
 
 
-stream_video(every_frame)

@@ -2,21 +2,54 @@
 <html>
 <head>
     <title></title>
-    <script type="text/javascript">
-       var ws = new WebSocket("ws://localhost:5001/");
-       ws.onopen = function() {
-           ws.send("socket open");
-       };
-       ws.onclose = function(evt) {
-           alert("socket closed");
-       };
-       ws.onmessage = function(evt) {
-           console.log('socket message', evt.data);
-       };
-    </script>
+    <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>
+    <style>
+        #slider {
+            background-color: red;
+        }
+        #content {
+            display: flex;
+        }
+    </style>
 </head>
 <body>
-    <h1></h1>
-    <img id="video" src="{{ url_for('video_viewer') }}">
+    <!--
+    <div class="control">
+        <img id="video" src="{{ url_for('video_viewer') }}">
+    </div>
+    -->
+    <div id="content">
+        <div id="slider">
+            <div>A</div>
+            <div>B</div>
+            <div>C</div>
+        </div>
+        <iframe id="iframe" src="http://example.com"></iframe>
+    </div>
+
+    <script src="/static/jquery/jquery-1.11.0.min.js"></script>
+    <script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
+    <script src="/static/slick/slick.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var ws = new WebSocket("ws://localhost:5001/");
+            ws.onopen = function () {
+                ws.send("socket open");
+            };
+            ws.onclose = function (evt) {
+                console.log("socket closed");
+            };
+            ws.onmessage = function (evt) {
+                console.log('socket message', evt.data);
+            };
+            $('#slider').slick({
+                dots: true,
+                infinite: true,
+                speed: 300,
+                slidesToShow: 1,
+
+            })
+        });
+    </script>
 </body>
 </html>
