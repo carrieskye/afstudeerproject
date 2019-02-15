@@ -25,4 +25,4 @@ def cleanup(rawData):
     elif(counter < 0):
         processedData.append("F")
 
-    print(processedData)
+    return processedData
