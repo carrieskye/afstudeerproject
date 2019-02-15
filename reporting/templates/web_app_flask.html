@@ -2,6 +2,18 @@
 <html>
 <head>
     <title></title>
+    <script type="text/javascript">
+       var ws = new WebSocket("ws://localhost:5001/");
+       ws.onopen = function() {
+           ws.send("socket open");
+       };
+       ws.onclose = function(evt) {
+           alert("socket closed");
+       };
+       ws.onmessage = function(evt) {
+           console.log('socket message', evt.data);
+       };
+    </script>
 </head>
 <body>
     <h1></h1>

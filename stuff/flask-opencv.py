@@ -4,7 +4,7 @@ import cv2
 # Use flask for web app
 from flask import Flask, render_template, Response
 
-from capture import Capture
+from stuff.capture import Capture
 from utils import print_header, print_row, format_percentage
 
 app = Flask(__name__)

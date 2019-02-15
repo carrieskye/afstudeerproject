@@ -1,15 +1,21 @@
 import time
 import cv2
+import webbrowser
 
 from utils import print_header, print_row, format_percentage
 
 
 class Capture:
 
-    def __init__(self, start, timestamp, hit):
+    def __init__(self, absolute_start, timestamp, frame, hit):
         self.timestamp = timestamp
-        self.timestamp_relative = timestamp - start
+        self.timestamp_relative = timestamp - absolute_start
         self.hit = hit
+
+        if hit:
+            self.frame = frame
+        else:
+            self.frame = None
 
     def __str__(self):
         return ("HIT" if self.hit else "FAIL") + " [" + str(format(self.timestamp_relative, '.2f')) + "s] "
@@ -33,12 +39,15 @@ detected = False
 # last [detection_duration] milliseconds.
 detection_duration = 4000
 detection_ratio_min = 90
-overall_ratio_min = 50
+overall_ratio_min = 30
 
 # We also check the last [leaving_duration] milliseconds when someone is detected. If the ratio of this duration drops
 # below the [leaving_ratio_min], we consider the person as no longer detected.
-leaving_duration = 6000
-leaving_ratio_min = 10
+leaving_duration = 10000
+leaving_ratio_min = 5
+
+# Minimum size of a face before we let the algorithm detect it: surface = min_face_size ^ 2.
+min_face_size = 100
 
 
 def get_detection_hit_ratio(captures):
@@ -71,11 +80,11 @@ def recent_hits_ratio(now):
     return get_detection_hit_ratio(recent_captures)
 
 
-def update_captures(new_faces, now):
+def update_captures(new_faces, frame, now):
     global detected
 
     # Add the new capture to the list of captures.
-    new_capture = Capture(start, time.time(), len(new_faces) > 0)
+    new_capture = Capture(start, time.time(), frame, len(new_faces) > 0)
     all_captures.append(new_capture)
 
     if len(all_captures) > 0:
@@ -88,6 +97,8 @@ def update_captures(new_faces, now):
         if (now - start) > detection_duration / 1000:
             # The person becomes detected if the ratio becomes greater than the [detection_ratio_min].
             if get_detection_hit_ratio(all_captures) > detection_ratio_min:
+                if not detected:
+                    webbrowser.open('https://www.torfs.be/nl/home', new=2)
                 detected = True
             # The person is no longer detected if the ratio becomes lower than the [overall_ratio_min] or has a
             # recent hit ratio that's lower than the [leaving_ratio_min].
@@ -124,10 +135,10 @@ def detect_face(frame, cascade_path):
         gray,
         scaleFactor=1.1,
         minNeighbors=5,
-        minSize=(200, 200)
+        minSize=(min_face_size, min_face_size)
     )
 
-    update_captures(faces, current_time)
+    update_captures(faces, frame, current_time)
 
     # Show FPS on frame
     fps = round(captured_frames / (current_time - start))
@@ -146,4 +157,3 @@ def detect_face(frame, cascade_path):
         cv2.putText(frame, "DETECTED", (15, 90), 2, 1, (87, 37, 168), 2)  # Draw the text
 
     return detected, frame
-
