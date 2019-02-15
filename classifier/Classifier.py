@@ -4,7 +4,7 @@ import dlib
 import numpy as np
 import argparse
 from contextlib import contextmanager
-from wide_resnet import WideResNet
+from classifier.wide_resnet import WideResNet
 import time
 from keras.utils.data_utils import get_file
 
@@ -59,7 +59,7 @@ def yield_images_from_dir(image_dir):
 def wut():
     print("wut prints")
 
-def doShit():
+def startClassifier():
     print("hello")
     image_dir = Path("D://Users/Denis/images")
     frames = []
@@ -73,7 +73,7 @@ def doShit():
         r = 640 / max(w, h)
         cv2.resize(img, (int(w * r), int(h * r)))
         frames.append(img)
-    classify(frames)
+    return classify(frames)
 
     #for frame in listOfFrames:
      #   listOfLabels = classify(frame)
@@ -89,8 +89,7 @@ def classify(frame):
     image_dir = args.image_dir
 
     if not weight_file:
-        weight_file = get_file("weights.28-3.73.hdf5", pretrained_model, cache_subdir="pretrained_models",
-                               file_hash=modhash, cache_dir=str(Path(__file__).resolve().parent))
+        weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
 
     # for face detection
     detector = dlib.get_frontal_face_detector()
@@ -133,9 +132,9 @@ def classify(frame):
 
             # draw results
             for i, d in enumerate(detected):
-                label = "{}, {}".format(int(predicted_ages[i]),
-                                        "M" if predicted_genders[i][0] < 0.5 else "F")
-                draw_label(img, (d.left(), d.top()), label)
+                label = []
+                label.append(int(predicted_ages[i]))
+                label.append("M" if predicted_genders[i][0] < 0.5 else "F")
                 resultPrediction.append(label)
 
         #cv2.imshow("result", img)
@@ -145,3 +144,4 @@ def classify(frame):
 
         if key == 27:  # ESC
             break
+    return resultPrediction
