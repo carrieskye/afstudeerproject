@@ -4,52 +4,84 @@
     <title></title>
     <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>
     <style>
-        #slider {
-            background-color: red;
-        }
+        body { margin: 0; padding: 0; }
         #content {
             display: flex;
+            /* make items stretch vertically */
+            align-items: stretch;
+            /* make it 100% of the vertical height of browser */
+            height: 100vh;
+        }
+        #slider {
+            background-color: black;
+            width: 30%
+        }
+        #iframe {
+            width: 100%;
+        }
+
+        #slider img {
+            width: auto;
+            margin: 0 auto;
+            height: calc(100vh);
+        }
+        #control {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+        }
+        #control > img {
+            height: 30vh;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
-    <!--
-    <div class="control">
-        <img id="video" src="{{ url_for('video_viewer') }}">
+<div id="control">
+    <img id="video" src="{{ url_for('video_viewer') }}">
+</div>
+<div id="content">
+    <div id="slider">
+        <div><img src="/static/img/f_1.jpg" alt=""/></div>
+        <div><img src="/static/img/f_2.jpg" alt=""/></div>
     </div>
-    -->
-    <div id="content">
-        <div id="slider">
-            <div>A</div>
-            <div>B</div>
-            <div>C</div>
-        </div>
-        <iframe id="iframe" src="http://example.com"></iframe>
-    </div>
+    <iframe id="iframe" src="/static/webshop.html"></iframe>
+    <pre id="debug"></pre>
+</div>
 
-    <script src="/static/jquery/jquery-1.11.0.min.js"></script>
-    <script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
-    <script src="/static/slick/slick.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            var ws = new WebSocket("ws://localhost:5001/");
-            ws.onopen = function () {
-                ws.send("socket open");
-            };
-            ws.onclose = function (evt) {
-                console.log("socket closed");
-            };
-            ws.onmessage = function (evt) {
-                console.log('socket message', evt.data);
-            };
-            $('#slider').slick({
-                dots: true,
-                infinite: true,
-                speed: 300,
-                slidesToShow: 1,
-
-            })
+<script src="/static/jquery/jquery-1.11.0.min.js"></script>
+<script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script src="/static/slick/slick.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        const ws = new WebSocket("ws://localhost:5001/");
+        const slides = [1, 2, 3];
+        let slide = 2;
+        ws.onopen = function () {
+            ws.send("socket open");
+        };
+        ws.onclose = function (evt) {
+            console.log("socket closed");
+        };
+        ws.onmessage = function (evt) {
+            console.log('socket message', evt.data);
+        };
+        $('#slider').slick({
+            infinite: true,
+            speed: 300,
+            autoplay: true,
+            autoplaySpeed: 3000,
+            slidesToShow: 1,
+            arrows: false,
+            dots: false,
+        }).on('beforeChange', function(){
+            $('#slider').slick('slickAdd', `
+                <div><img src="/static/img/f_${slides[slide%slides.length]}.jpg" alt=""/></div>
+            `);
+            slide++;
         });
-    </script>
+    });
+</script>
 </body>
 </html>
+

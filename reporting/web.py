@@ -13,7 +13,7 @@ changed = False
 
 def show_detected(label):
     for connection in connections:
-        connection.send_message('label:' + label)
+        connection.send_message(label)
 
 
 def show_frame(frame):

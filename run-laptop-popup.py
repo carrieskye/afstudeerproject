@@ -3,7 +3,7 @@ from datetime import datetime
 
 from cameras.laptopcam import stream_video
 from detectors.simple import detect_face
-from reporting.popup import show_frame, show_detected
+from reporting.web import show_frame, show_detected
 from classifier.random import classify
 
 # cascada to use with opencv to identify faces
