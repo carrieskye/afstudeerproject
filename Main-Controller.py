@@ -5,13 +5,14 @@ from data_treatment.Post_Cleanup import cleanup
 
 camera = 0
 detector = 0
+dataLabel = []
 
 def main():
 
     rawData = startClassifier()
-    print(rawData)
-    cleanup(rawData)
 
+    dataLabel = cleanup(rawData)
+    print(dataLabel)
     #camera = Camera()
     #detector = Detector(camera)
 
