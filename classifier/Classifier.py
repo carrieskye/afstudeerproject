@@ -55,9 +55,13 @@ def yield_images_from_dir(image_dir):
             r = 640 / max(w, h)
             yield cv2.resize(img, (int(w * r), int(h * r)))
 
-def main():
-    image_dir = Path("D://Users/Denis/images/")
+def wut():
+    print("wut prints")
+
+def doShit():
     print("hello")
+    image_dir = Path("D://Users/Denis/images")
+    frames = []
 
     for image_path in image_dir.glob("*.*"):
         img = cv2.imread(str(image_path), 1)
@@ -65,14 +69,16 @@ def main():
         if img is not None:
             h, w, _ = img.shape
             r = 640 / max(w, h)
-            yield cv2.resize(img, (int(w * r), int(h * r)))
-        classify(img)
+            cv2.resize(img, (int(w * r), int(h * r)))
+        frames.append(img)
+        classify(frames)
 
     #for frame in listOfFrames:
      #   listOfLabels = classify(frame)
       #  print(listOfLabels)
 
 def classify(frame):
+    print("start classifying")
     args = get_args()
     depth = args.depth
     k = args.width
@@ -134,4 +140,3 @@ def classify(frame):
 
         if key == 27:  # ESC
             break
-
