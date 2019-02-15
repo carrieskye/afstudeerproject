@@ -2,10 +2,10 @@ import numpy
 
 
 from cameras.laptopcam import stream_video
-#from detectors.simple import detect_face
+# from detectors.simple import detect_face
 from detectors.rollingcaro import detect_face
 from reporting.popup import show_frame
-#from reporting.web import show_frame
+# from reporting.web import show_frame
 
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
