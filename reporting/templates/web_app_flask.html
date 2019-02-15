@@ -57,6 +57,7 @@
         const ws = new WebSocket("ws://localhost:5001/");
         const slides = [1, 2, 3];
         let slide = 2;
+        let label = 'f';
         ws.onopen = function () {
             ws.send("socket open");
         };
@@ -65,6 +66,9 @@
         };
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
+            if (evt.data == 'MALE') label = 'm';
+            if (evt.data == 'FEMALE') label = 'f';
+            $('iframe').attr('src', '/static/webshop.html?label=' + evt.data);
         };
         $('#slider').slick({
             infinite: true,
@@ -76,7 +80,7 @@
             dots: false,
         }).on('beforeChange', function(){
             $('#slider').slick('slickAdd', `
-                <div><img src="/static/img/f_${slides[slide%slides.length]}.jpg" alt=""/></div>
+                <div><img src="/static/img/${label}_${slides[slide%slides.length]}.jpg" alt=""/></div>
             `);
             slide++;
         });
