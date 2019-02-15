@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 from contextlib import contextmanager
 from wide_resnet import WideResNet
+import time
 from keras.utils.data_utils import get_file
 
 pretrained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
@@ -64,14 +65,15 @@ def doShit():
     frames = []
 
     for image_path in image_dir.glob("*.*"):
+        print(image_path)
         img = cv2.imread(str(image_path), 1)
 
-        if img is not None:
-            h, w, _ = img.shape
-            r = 640 / max(w, h)
-            cv2.resize(img, (int(w * r), int(h * r)))
+        #if img is not None:
+        h, w, _ = img.shape
+        r = 640 / max(w, h)
+        cv2.resize(img, (int(w * r), int(h * r)))
         frames.append(img)
-        classify(frames)
+    classify(frames)
 
     #for frame in listOfFrames:
      #   listOfLabels = classify(frame)
@@ -101,6 +103,7 @@ def classify(frame):
 
     #Loads in images
     image_generator = frame
+    resultPrediction = []
 
     for img in image_generator:
         input_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -127,15 +130,17 @@ def classify(frame):
             ages = np.arange(0, 101).reshape(101, 1)
             predicted_ages = results[1].dot(ages).flatten()
 
+
             # draw results
             for i, d in enumerate(detected):
                 label = "{}, {}".format(int(predicted_ages[i]),
                                         "M" if predicted_genders[i][0] < 0.5 else "F")
                 draw_label(img, (d.left(), d.top()), label)
-                print(label)
-                return label
-            print("hey hey")
+                resultPrediction.append(label)
+
         #cv2.imshow("result", img)
+        #time.sleep(3)
+        print(resultPrediction)
         key = cv2.waitKey(-1) if image_dir else cv2.waitKey(30)
 
         if key == 27:  # ESC
