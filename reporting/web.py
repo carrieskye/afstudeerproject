@@ -1,25 +1,37 @@
 from flask import Flask, render_template, Response
+from classifier.all_classifiers import Classification
+
 import cv2
 import threading
 import time
 from simple_websocket_server import WebSocketServer, WebSocket
-
 
 app = Flask(__name__)
 
 current_frame = None
 changed = False
 
+last_labels = Classification("unknown", "unknown")
 
-def show_detected(label):
+
+def show_detected(labels):
+    global last_labels
+
+    last_labels = labels
+
     for connection in connections:
-        connection.send_message('label:' + label)
+        connection.send_message('gender:' + labels.gender)
+        connection.send_message('emotion:' + labels.emotion)
 
 
 def show_frame(frame):
     global current_frame
     global changed
     current_frame = frame
+
+    if last_labels.gender != 'unknown' or last_labels.emotion != 'unknown':
+        cv2.putText(frame, "[" + last_labels.gender + ", " + last_labels.emotion + "]", (15, 120), 2, 1, (0, 0, 0))
+
     changed = True
 
 
@@ -29,7 +41,8 @@ def get_latest_frame():
     while True:
         if changed:
             changed = False
-            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', current_frame)[1].tobytes() + b'\r\n\r\n')
+            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', current_frame)[
+                1].tobytes() + b'\r\n\r\n')
         time.sleep(0.1)
 
 
