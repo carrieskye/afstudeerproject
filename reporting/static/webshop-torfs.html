@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+        <script type="text/javascript" src="/static/jquery/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript">
+            var idleState = false;
+            var idleTimer = null;
+            $(document).ready(function() {
+                $('body').load('/static/torfs/'+(new URL(window.location).searchParams.get('type') || 'dames')+'.html');
+
+                // check if user is active part
+                $('*').bind('mousemove click mouseup mousedown keydown keypress keyup submit change mouseenter scroll resize dblclick', function () {
+                    clearTimeout(idleTimer);
+                    if (idleState == true) {
+                        //$("body").css('background-color','#fff');
+                    }
+                    idleState = false;
+                    idleTimer = setTimeout(function () {
+                        //$("body").css('background-color','#ddd');
+                        idleState = true; }, 5 * 1000);
+                });
+                $("body").trigger("mousemove");
+                // end
+            });
+            window.onmessage = function(e){
+                if (idleState) load_page_for(e.data);
+            };
+            function load_page_for(type){
+                const $body = $('body');
+                $body.fadeOut(() =>
+                    $body.load(`/static/torfs/${type}.html`, () =>
+                        $body.fadeIn()));
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
