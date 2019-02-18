@@ -76,7 +76,9 @@ def classify(frame):
 
         # draw results
         for i, d in enumerate(detected):
-            label = [int(predicted_ages[i]), "M" if predicted_genders[i][0] < 0.5 else "F"]
+            label = [-1, "U"]
+            label[0] = int(predicted_ages[i])
+            label[1] = "M" if predicted_genders[i][0] < 0.5 else "F"
             result_prediction.append(label)
 
     return result_prediction
