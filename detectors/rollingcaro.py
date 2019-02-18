@@ -155,3 +155,11 @@ def detect_face(frame, cascade_path):
         cv2.putText(frame, "DETECTED", (15, 90), 2, 1, (87, 37, 168), 2)  # Draw the text
 
     return detected, frame
+
+
+def get_detected_frames(timestamp):
+    detected_frames = []
+    for capture in all_captures:
+        if capture.hit and capture.timestamp > timestamp:
+            detected_frames.append(capture.frame)
+    return detected_frames

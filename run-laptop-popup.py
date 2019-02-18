@@ -4,10 +4,10 @@ from classifier.all_classifiers import Classification
 
 from cameras.laptopcam import stream_video
 # from detectors.simple import detect_face
-from detectors.rollingcaro import detect_face
+from detectors.rollingcaro import detect_face, get_detected_frames
 # from reporting.popup import show_frame, show_detected
 from reporting.web import show_frame, show_detected
-from classifier.all_classifiers import classify
+from classifier.all_classifiers import classify_stream
 
 # cascada to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -46,8 +46,9 @@ def every_frame(frame):
     # no cooldown
     if cooldown_start_time is None:
         cooldown_start_time = datetime.now()
+        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - cooldown_time)
 
-        classification = classify(frame)
+        classification = classify_stream(detected_frames)
 
         if last_labels is not classification:
             last_labels = classification
