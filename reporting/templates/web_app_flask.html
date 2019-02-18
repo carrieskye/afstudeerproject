@@ -42,8 +42,9 @@
 
         #control > img {
             width: 25vw;
-            opacity: 1;
-            z-index: 99
+            opacity: 0.8;
+            z-index: 99;
+            border: gray;
         }
 
         #control #debug {
@@ -91,10 +92,9 @@
             console.log('socket message', evt.data);
             if (evt.data !== undefined) {
                 const classification = jQuery.parseJSON(evt.data);
-                console.log(classification);
                 if (classification.gender === 'm') gender_label = 'm';
                 else gender_label = 'f';
-                if (classification.age > 50) age_label = 'a';
+                if (classification.age > 12) age_label = 'a';
                 else age_label = 'c';
                 if (evt.data == 'idle') is_remote_page_idle = true;
                 if (evt.data == 'active') is_remote_page_idle = false;

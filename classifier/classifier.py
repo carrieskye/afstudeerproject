@@ -13,24 +13,22 @@ def classify_stream(frames):
 
 
 def classify(frame):
-    gender_label = classify_gender(frame)
-    emotion_label = classify_emotion(frame)
-
     age_gender_label = start_classifier_stream(frame)
-    age_label = age_gender_label[0]
-    gender2_label = age_gender_label[1]
 
-    new_classification = Classification(gender_label, gender2_label, emotion_label, age_label)
+    gender_label = age_gender_label[1]
+    emotion_label = classify_emotion(frame)
+    age_label = age_gender_label[0]
+
+    new_classification = Classification(gender_label, emotion_label, age_label)
     return new_classification
 
 
 class Classification:
 
-    def __init__(self, gender, gender2, emotion, age):
+    def __init__(self, gender, emotion, age):
         self.gender = gender
-        self.gender2 = gender2
         self.emotion = emotion
         self.age = age
 
     def __str__(self):
-        return "[" + str(self.gender) + ", " + str(self.gender2) + ", " + str(self.emotion) + ", " + str(self.age) + "]"
+        return "[" + str(self.gender) + ", " + str(self.emotion) + ", " + str(self.age) + "]"
