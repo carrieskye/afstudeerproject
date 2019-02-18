@@ -1,6 +1,6 @@
-from classifier.gender import classify_gender
-from classifier.emotion import classify_emotion
 from classifier.age_gender import start_classifier_stream
+from classifier.emotion import classify_emotion
+from classifier.gender import classify_gender
 
 
 def classify_stream(frames):
@@ -17,8 +17,8 @@ def classify(frame):
     emotion_label = classify_emotion(frame)
 
     age_gender_label = start_classifier_stream(frame)
-    gender2_label = age_gender_label[0]
-    age_label = age_gender_label[1]
+    age_label = age_gender_label[0]
+    gender2_label = age_gender_label[1]
 
     new_classification = Classification(gender_label, gender2_label, emotion_label, age_label)
     return new_classification

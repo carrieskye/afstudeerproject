@@ -41,7 +41,10 @@ def classify_emotion(frame):
         x1, x2, y1, y2 = apply_offsets(face_coordinates, emotion_offsets)
 
         gray_face = gray_image[y1:y2, x1:x2]
-        gray_face = cv2.resize(gray_face, emotion_target_size)
+        try:
+            gray_face = cv2.resize(gray_face, emotion_target_size)
+        except:
+            continue
         gray_face = np.expand_dims(gray_face, 0)
         gray_face = np.expand_dims(gray_face, -1)
         gray_face = preprocess_input(gray_face, False)

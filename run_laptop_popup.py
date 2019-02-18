@@ -46,7 +46,7 @@ def every_frame(frame):
     # no cooldown
     if cooldown_start_time is None:
         cooldown_start_time = datetime.now()
-        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - cooldown_time)
+        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - (cooldown_time / 2))
 
         classification = classify_stream(detected_frames)
 
