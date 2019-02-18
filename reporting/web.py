@@ -54,7 +54,9 @@ connections = []
 class SimpleEcho(WebSocket):
     def handle(self):
         # echo message back to client
-        self.send_message(self.data)
+        print("received data:" + self.data)
+        for connection in connections:
+            connection.send_message(self.data)
 
     def connected(self):
         connections.append(self)

@@ -34,41 +34,58 @@
             height: 30vh;
             opacity: 0.7;
         }
+       #control #debug {
+            background: black;
+            color: red;
+            margin: 0; padding: 4px;
+         }
     </style>
 </head>
 <body>
 <div id="control">
     <img id="video" src="{{ url_for('video_viewer') }}">
+    <div id="debug"></div>
 </div>
 <div id="content">
     <div id="slider">
         <div><img src="/static/img/f_1.jpg" alt=""/></div>
         <div><img src="/static/img/f_2.jpg" alt=""/></div>
     </div>
-    <iframe id="iframe" src="/static/webshop.html"></iframe>
-    <pre id="debug"></pre>
+    <iframe id="iframe" src="/static/webshop-torfs.html"></iframe>
 </div>
 
 <script src="/static/jquery/jquery-1.11.0.min.js"></script>
 <script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
 <script src="/static/slick/slick.min.js"></script>
 <script type="text/javascript">
+    var is_remote_page_idle = false;
+    function labels_to_type(labels) {
+        if (labels == 'm') return 'heren';
+        if (labels == 'f') return 'dames';
+    }
     $(document).ready(function() {
         const ws = new WebSocket("ws://localhost:5001/");
         const slides = [1, 2, 3];
         let slide = 2;
         let label = 'f';
-        ws.onopen = function () {
-            ws.send("socket open");
-        };
-        ws.onclose = function (evt) {
-            console.log("socket closed");
-        };
+
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
             if (evt.data == 'MALE') label = 'm';
             if (evt.data == 'FEMALE') label = 'f';
-            $('iframe').attr('src', '/static/webshop.html?label=' + evt.data);
+
+            if (evt.data == 'idle') is_remote_page_idle = true;
+            if (evt.data == 'active') is_remote_page_idle = false;
+
+            $('#debug').text(label);
+            try {
+                $('#iframe')[0].contentWindow.location.href;
+                $('#iframe')[0].contentWindow.postMessage(labels_to_type(label), '*');
+            } catch (e) {
+                console.log('CANNOT COMMUNICATE WITH IFRAME', e);
+                if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(label));
+            }
+
         };
         $('#slider').slick({
             infinite: true,
