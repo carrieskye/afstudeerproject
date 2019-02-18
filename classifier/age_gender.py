@@ -20,6 +20,7 @@ img_size = 64
 model = WideResNet(img_size, depth=depth, k=width)()
 model.load_weights(weight_file)
 
+
 def start_classifier_images(path):
     print("hello")
     image_dir = path

@@ -1,6 +1,6 @@
+import json
 import threading
 import time
-import json
 
 import cv2
 from flask import Flask, render_template, Response, send_from_directory
@@ -13,7 +13,7 @@ app = Flask(__name__, static_url_path='')
 current_frame = None
 changed = False
 
-last_labels = Classification('unknown', 'unknown', 'unknown', -1)
+last_labels = Classification('unknown', 'unknown', -1)
 
 
 def show_detected(labels):
@@ -22,7 +22,7 @@ def show_detected(labels):
     last_labels = labels
 
     for connection in connections:
-        connection.send_message(json.dumps(labels.emotion + ' ' + labels.gender))
+        connection.send_message(json.dumps(labels.__dict__))
 
 
 def show_frame(frame):
@@ -30,8 +30,7 @@ def show_frame(frame):
     global changed
     current_frame = frame
 
-    if last_labels.gender != 'unknown' or last_labels.gender2 != 'unknown' or \
-            last_labels.emotion != 'unknown' or last_labels.age != -1:
+    if last_labels.gender != 'unknown' or last_labels.emotion != 'unknown' or last_labels.age != -1:
         cv2.putText(frame, str(last_labels), (15, 120), 2, 1, (0, 0, 0))
 
     changed = True

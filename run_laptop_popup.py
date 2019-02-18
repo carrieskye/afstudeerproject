@@ -18,7 +18,7 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 cooldown_time = 3
 cooldown_start_time = None
 
-last_labels = Classification('unknown', 'unknown', 'unknown', -1)
+last_labels = Classification('unknown', 'unknown', -1)
 
 
 def every_frame(frame):

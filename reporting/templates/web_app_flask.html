@@ -4,7 +4,11 @@
     <title></title>
     <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>
     <style>
-        body { margin: 0; padding: 0; }
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
         #content {
             display: flex;
             /* make items stretch vertically */
@@ -12,33 +16,43 @@
             /* make it 100% of the vertical height of browser */
             height: 100vh;
         }
+
         #slider {
-            background-color: black;
-            width: 30%
+            background-color: white;
+            width: 25%;
+            vertical-align: middle;
+            z-index: -1;
         }
+
         #iframe {
             width: 100%;
         }
 
         #slider img {
-            width: auto;
-            margin: 0 auto;
-            height: calc(100vh);
+            width: 100%;
+            margin: auto;
+            height: auto;
         }
+
         #control {
             position: fixed;
             bottom: 0;
-            right: 0;
+            left: 0;
         }
+
         #control > img {
-            height: 30vh;
-            opacity: 0.7;
+            width: 25vw;
+            opacity: 0.8;
+            z-index: 99;
+            border: gray;
         }
-       #control #debug {
+
+        #control #debug {
             background: black;
             color: red;
-            margin: 0; padding: 4px;
-         }
+            margin: 0;
+            padding: 4px;
+        }
     </style>
 </head>
 <body>
@@ -48,8 +62,8 @@
 </div>
 <div id="content">
     <div id="slider">
-        <div><img src="/static/img/f_1.jpg" alt=""/></div>
-        <div><img src="/static/img/f_2.jpg" alt=""/></div>
+        <div><img src="/static/img/c_f_1.png" alt=""/></div>
+        <div><img src="/static/img/c_f_2.png" alt=""/></div>
     </div>
     <iframe id="iframe" src="/static/webshop-torfs.html"></iframe>
 </div>
@@ -59,37 +73,43 @@
 <script src="/static/slick/slick.min.js"></script>
 <script type="text/javascript">
     var is_remote_page_idle = false;
-    function labels_to_type(labels) {
-        if (labels == 'm') return 'heren';
-        if (labels == 'f') return 'dames';
+
+    function labels_to_type(gender_label, age_label) {
+        if (gender_label === 'm' && age_label === 'a') return 'heren';
+        if (gender_label === 'f' && age_label === 'a') return 'dames';
+        if (gender_label === 'm' && age_label === 'c') return 'jongens';
+        if (gender_label === 'f' && age_label === 'c') return 'meisjes';
     }
-    $(document).ready(function() {
+
+    $(document).ready(function () {
         const ws = new WebSocket("ws://localhost:5001/");
-        const slides = [1, 2, 3];
+        const slides = [1, 2, 3, 4];
         let slide = 2;
-        let label = 'f';
+        let gender_label = 'f';
+        let age_label = 'a';
 
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
-
-            if (evt.data.includes('man')) label = 'm';
-            if (evt.data.includes('woman')) label = 'f';
-
-            if (evt.data == 'idle') is_remote_page_idle = true;
-            if (evt.data == 'active') is_remote_page_idle = false;
-
-            $('#debug').text(label);
-            try {
-                $('#iframe')[0].contentWindow.location.href;
-                $('#iframe')[0].contentWindow.postMessage(labels_to_type(label), '*');
-            } catch (e) {
-                console.log('CANNOT COMMUNICATE WITH IFRAME', e);
-                if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(label));
+            if (evt.data !== undefined) {
+                const classification = jQuery.parseJSON(evt.data);
+                if (classification.gender === 'm') gender_label = 'm';
+                else gender_label = 'f';
+                if (classification.age > 12) age_label = 'a';
+                else age_label = 'c';
+                if (evt.data == 'idle') is_remote_page_idle = true;
+                if (evt.data == 'active') is_remote_page_idle = false;
+                $('#debug').text(JSON.stringify(classification));
             }
 
-
-            $('iframe').attr('src', '/static/webshop.html?label=' + JSON.stringify(evt.data));
+            try {
+                $('#iframe')[0].contentWindow.location.href;
+                $('#iframe')[0].contentWindow.postMessage(labels_to_type(gender_label, age_label), '*');
+            } catch (e) {
+                console.log('CANNOT COMMUNICATE WITH IFRAME', e);
+                if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(gender_label, age_label));
+            }
         };
+
         $('#slider').slick({
             infinite: true,
             speed: 300,
@@ -98,9 +118,9 @@
             slidesToShow: 1,
             arrows: false,
             dots: false,
-        }).on('beforeChange', function(){
+        }).on('beforeChange', function () {
             $('#slider').slick('slickAdd', `
-                <div><img src="/static/img/${label}_${slides[slide%slides.length]}.jpg" alt=""/></div>
+                <div><img src="/static/img/${age_label}_${gender_label}_${slides[slide % slides.length]}.png" alt=""/></div>
             `);
             slide++;
         });
