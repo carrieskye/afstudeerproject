@@ -7,6 +7,18 @@ from classifier.wide_resnet import WideResNet
 pre_trained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
 mod_hash = 'fbe63257a054c1c5466cfd7bf14646d6'
 
+depth = 16
+width = 8
+weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
+margin = 0.4
+
+# for face detection
+detector = dlib.get_frontal_face_detector()
+
+# load model and weights
+img_size = 64
+model = WideResNet(img_size, depth=depth, k=width)()
+model.load_weights(weight_file)
 
 def start_classifier_images(path):
     print("hello")
@@ -29,27 +41,11 @@ def start_classifier_stream(frame):
 
 
 def classify(frame):
-    depth = 16
-    width = 8
-    weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
-    margin = 0.4
-
-    # for face detection
-    detector = dlib.get_frontal_face_detector()
-
-    # load model and weights
-    img_size = 64
-    model = WideResNet(img_size, depth=depth, k=width)()
-    model.load_weights(weight_file)
-
-    # Loads in images
-    image = frame
-
-    input_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    img_h, img_w, _ = np.shape(input_img)
+    input_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    img_h, img_w, _ = np.shape(input_frame)
 
     # detect faces using dlib detector
-    detected = detector(input_img, 1)
+    detected = detector(input_frame, 1)
     faces = np.empty((len(detected), img_size, img_size, 3))
 
     label = [-1, 'U']
@@ -61,9 +57,9 @@ def classify(frame):
             yw1 = max(int(y1 - margin * h), 0)
             xw2 = min(int(x2 + margin * w), img_w - 1)
             yw2 = min(int(y2 + margin * h), img_h - 1)
-            cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
             # cv2.rectangle(img, (xw1, yw1), (xw2, yw2), (255, 0, 0), 2)
-            faces[i, :, :, :] = cv2.resize(image[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+            faces[i, :, :, :] = cv2.resize(frame[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
 
         # predict ages and genders of the detected faces
         results = model.predict(faces)

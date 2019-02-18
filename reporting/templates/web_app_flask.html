@@ -71,6 +71,7 @@
 
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
+
             if (evt.data.includes('man')) label = 'm';
             if (evt.data.includes('woman')) label = 'f';
 
@@ -87,6 +88,7 @@
             }
 
 
+            $('iframe').attr('src', '/static/webshop.html?label=' + JSON.stringify(evt.data));
         };
         $('#slider').slick({
             infinite: true,

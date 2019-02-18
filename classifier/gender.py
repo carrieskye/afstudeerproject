@@ -36,13 +36,16 @@ def classify_gender(frame):
     gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     faces = detect_faces(face_detection, gray_image)
-    gender_text = "unknown"
+    gender_text = 'unknown'
 
     for face_coordinates in faces:
         x1, x2, y1, y2 = apply_offsets(face_coordinates, gender_offsets)
 
         rgb_face = rgb_image[y1:y2, x1:x2]
-        rgb_face = cv2.resize(rgb_face, gender_target_size)
+        try:
+            rgb_face = cv2.resize(rgb_face, gender_target_size)
+        except:
+            continue
         rgb_face = np.expand_dims(rgb_face, 0)
         rgb_face = preprocess_input(rgb_face, False)
 
@@ -51,4 +54,4 @@ def classify_gender(frame):
         gender_text = gender_labels[gender_label_arg]
         gender_window.append(gender_text)
 
-    return gender_text
+    return 'M' if gender_text == 'man' else 'F' if gender_text == 'woman' else 'unknown'
