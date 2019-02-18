@@ -1,20 +1,14 @@
-import numpy
 from datetime import datetime
-from classifier.classifier import Classification
 
-from cameras.laptop_cam import stream_video
-# from detectors.simple import detect_face
-from detectors.rollingcaro import detect_face, get_detected_frames
+# from detectors.rolling_caro import detect_face
 # from reporting.popup import show_frame, show_detected
 from reporting.web import show_frame, show_detected
-from classifier.classifier import classify_stream
 
-# cascada to use with opencv to identify faces
+# cascade to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 # cooldown time in seconds, the time to wait before a new detection is used
 cooldown_time = 5
-
 cooldown_start_time = None
 
 last_labels = Classification('unknown', 'unknown', 'unknown', -1)
@@ -24,7 +18,7 @@ def every_frame(frame):
     global cooldown_start_time, last_labels
 
     # detector
-    person_detected, frame_with_face = detect_face(numpy.copy(frame), cascadePath)
+    person_detected, frame_with_face = True, None
 
     # if we haven't detected a person don't do anything
     if not person_detected:
@@ -56,8 +50,5 @@ def every_frame(frame):
         label_action(last_labels)
 
 
-def label_action(labels):
-    show_detected(labels)
-
-
-stream_video(every_frame)
+def label_action(label: str):
+    show_detected(label)
