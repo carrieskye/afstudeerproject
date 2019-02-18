@@ -7,8 +7,9 @@ from classifier.classifier import Classification
 from classifier.classifier import classify_stream
 from detectors.rolling_caro import detect_face, get_detected_frames
 # from detectors.simple import detect_face
-# from reporting.popup import show_frame, show_detected
 from reporting.web import show_frame, show_detected
+#from reporting.web import show_frame, show_detected
+from data_treatment.post_processor import cleanup
 
 # cascade to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -48,7 +49,9 @@ def every_frame(frame):
         cooldown_start_time = datetime.now()
         detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
 
-        classification = classify_stream(detected_frames)
+        classification_results = classify_stream(detected_frames)
+
+        classification = cleanup(classification_results)
 
         if last_labels is not classification:
             last_labels = classification

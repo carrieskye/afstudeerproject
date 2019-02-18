@@ -9,7 +9,7 @@ def classify_stream(frames):
         classification = classify(frame)
         print(classification)
         classifications.append(classification)
-    return classifications[len(classifications) - 1]
+    return classifications
 
 
 def classify(frame):
@@ -22,7 +22,6 @@ def classify(frame):
 
     new_classification = Classification(gender_label, gender2_label, emotion_label, age_label)
     return new_classification
-
 
 class Classification:
 
