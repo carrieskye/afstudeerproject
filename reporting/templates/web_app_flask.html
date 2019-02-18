@@ -4,7 +4,11 @@
     <title></title>
     <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>
     <style>
-        body { margin: 0; padding: 0; }
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
         #content {
             display: flex;
             /* make items stretch vertically */
@@ -12,10 +16,12 @@
             /* make it 100% of the vertical height of browser */
             height: 100vh;
         }
+
         #slider {
             background-color: black;
             width: 30%
         }
+
         #iframe {
             width: 100%;
         }
@@ -25,11 +31,13 @@
             margin: 0 auto;
             height: calc(100vh);
         }
+
         #control {
             position: fixed;
             bottom: 0;
             right: 0;
         }
+
         #control > img {
             height: 30vh;
             opacity: 0.7;
@@ -42,8 +50,8 @@
 </div>
 <div id="content">
     <div id="slider">
-        <div><img src="/static/img/f_1.jpg" alt=""/></div>
-        <div><img src="/static/img/f_2.jpg" alt=""/></div>
+        <div><img src="/static/img/c_f_1.png" alt=""/></div>
+        <div><img src="/static/img/c_f_2.png" alt=""/></div>
     </div>
     <iframe id="iframe" src="/static/webshop.html"></iframe>
     <pre id="debug"></pre>
@@ -53,11 +61,12 @@
 <script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
 <script src="/static/slick/slick.min.js"></script>
 <script type="text/javascript">
-    $(document).ready(function() {
+    $(document).ready(function () {
         const ws = new WebSocket("ws://localhost:5001/");
-        const slides = [1, 2, 3];
+        const slides = [1, 2, 3, 4];
         let slide = 2;
-        let label = 'f';
+        let gender_label = 'f';
+        let age_label = 'a';
         ws.onopen = function () {
             ws.send("socket open");
         };
@@ -66,9 +75,15 @@
         };
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
-            if (evt.data.includes('m')) label = 'm';
-            if (evt.data.includes('f')) label = 'f';
-            $('iframe').attr('src', '/static/webshop.html?label=' + JSON.stringify(evt.data));
+            if (evt.data !== undefined) {
+                const classification = jQuery.parseJSON(evt.data);
+                console.log(classification);
+                if (classification.gender === 'm') gender_label = 'm';
+                if (classification.gender === 'f') gender_label = 'f';
+                if (classification.age > 12) age_label = 'a';
+                if (classification.age <= 12) age_label = 'c';
+                $('iframe').attr('src', '/static/webshop.html?label=' + classification.toString());
+            }
         };
         $('#slider').slick({
             infinite: true,
@@ -78,9 +93,9 @@
             slidesToShow: 1,
             arrows: false,
             dots: false,
-        }).on('beforeChange', function(){
+        }).on('beforeChange', function () {
             $('#slider').slick('slickAdd', `
-                <div><img src="/static/img/${label}_${slides[slide%slides.length]}.jpg" alt=""/></div>
+                <div><img src="/static/img/${age_label}_${gender_label}_${slides[slide % slides.length]}.png" alt=""/></div>
             `);
             slide++;
         });

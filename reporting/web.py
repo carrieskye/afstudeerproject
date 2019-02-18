@@ -22,7 +22,7 @@ def show_detected(labels):
     last_labels = labels
 
     for connection in connections:
-        connection.send_message(json.dumps(labels.emotion + ' ' + labels.gender))
+        connection.send_message(json.dumps(labels.__dict__))
 
 
 def show_frame(frame):
