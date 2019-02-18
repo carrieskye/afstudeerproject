@@ -71,8 +71,8 @@
 
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
-            if (evt.data == 'MALE') label = 'm';
-            if (evt.data == 'FEMALE') label = 'f';
+            if (evt.data.includes('man')) label = 'm';
+            if (evt.data.includes('woman')) label = 'f';
 
             if (evt.data == 'idle') is_remote_page_idle = true;
             if (evt.data == 'active') is_remote_page_idle = false;
@@ -85,6 +85,7 @@
                 console.log('CANNOT COMMUNICATE WITH IFRAME', e);
                 if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(label));
             }
+
 
         };
         $('#slider').slick({

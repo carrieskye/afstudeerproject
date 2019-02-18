@@ -1,25 +1,40 @@
-from flask import Flask, render_template, Response, send_from_directory
-import cv2
 import threading
 import time
+
+import cv2
+from flask import Flask, render_template, Response, send_from_directory
 from simple_websocket_server import WebSocketServer, WebSocket
 
+from classifier.classifier import Classification
 
 app = Flask(__name__, static_url_path='')
 
 current_frame = None
 changed = False
 
+last_labels = Classification('unknown', 'unknown', 'unknown', -1)
 
-def show_detected(label):
+
+def show_detected(labels):
+    global last_labels
+
+    last_labels = labels
+
     for connection in connections:
-        connection.send_message(label)
+        connection.send_message(labels.emotion + ' ' + labels.gender)
 
 
 def show_frame(frame):
     global current_frame
     global changed
     current_frame = frame
+
+    if last_labels.gender != 'unknown' or last_labels.gender2 != 'unknown' or \
+            last_labels.emotion != 'unknown' or last_labels.age != -1:
+        label_text = "[" + last_labels.gender + ", " + last_labels.gender2 + ", " + last_labels.emotion + ", " \
+                     + last_labels.age + "]"
+        cv2.putText(frame, label_text, (15, 120), 2, 1, (0, 0, 0))
+
     changed = True
 
 
@@ -29,7 +44,8 @@ def get_latest_frame():
     while True:
         if changed:
             changed = False
-            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', current_frame)[1].tobytes() + b'\r\n\r\n')
+            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + cv2.imencode('.jpg', current_frame)[
+                1].tobytes() + b'\r\n\r\n')
         time.sleep(0.1)
 
 
