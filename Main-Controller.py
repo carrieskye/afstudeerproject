@@ -1,6 +1,6 @@
 #from Camera import Camera
 #from Detector import Detector
-from classifier.Classifier import startClassifierImages, startClassifierStream
+from classifier.age_gender import startClassifierImages, startClassifierStream
 from data_treatment.Post_Cleanup import cleanup
 
 camera = 0
