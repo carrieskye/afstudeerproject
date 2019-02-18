@@ -1,28 +1,25 @@
-
-
-def cleanup(rawData):
-
-    unprocessedData = rawData
-    processedData = []
+def cleanup(raw_data):
+    unprocessed_data = raw_data
+    processed_data = []
 
     i = 0
-    for element in unprocessedData:
+    for element in unprocessed_data:
         i += element[0]
 
-    i /= len(unprocessedData)
+    i /= len(unprocessed_data)
 
-    processedData.append(int(i))
+    processed_data.append(int(i))
 
     counter = 0
-    for element in unprocessedData:
-        if(element[1] == "M"):
+    for element in unprocessed_data:
+        if element[1] == "M":
             counter += 1
-        elif(element[1] == "F"):
+        elif element[1] == "F":
             counter -= 1
 
-    if(counter >=0):
-        processedData.append("M")
-    elif(counter < 0):
-        processedData.append("F")
+    if counter >= 0:
+        processed_data.append("M")
+    elif counter < 0:
+        processed_data.append("F")
 
-    return processedData
+    return processed_data

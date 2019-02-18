@@ -33,4 +33,4 @@ class Classification:
         self.age = age
 
     def __str__(self):
-        return "[" + self.gender + ", " + self.emotion
+        return "[" + str(self.gender) + ", " + str(self.gender2) + ", " + str(self.emotion) + ", " + str(self.age) + "]"

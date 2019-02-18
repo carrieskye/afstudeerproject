@@ -3,7 +3,6 @@ from datetime import datetime
 import numpy
 
 from cameras.laptop_cam import stream_video
-from classifier.random import classify
 from detectors.simple import detect_face
 from reporting.web import show_frame, show_detected
 

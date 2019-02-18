@@ -1,12 +1,8 @@
-from pathlib import Path
 import cv2
 import dlib
 import numpy as np
-import argparse
-from contextlib import contextmanager
+
 from classifier.wide_resnet import WideResNet
-import time
-from keras.utils.data_utils import get_file
 
 pre_trained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
 mod_hash = 'fbe63257a054c1c5466cfd7bf14646d6'
@@ -48,7 +44,6 @@ def classify(frame):
 
     # Loads in images
     image = frame
-    result_prediction = []
 
     input_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img_h, img_w, _ = np.shape(input_img)
@@ -56,6 +51,8 @@ def classify(frame):
     # detect faces using dlib detector
     detected = detector(input_img, 1)
     faces = np.empty((len(detected), img_size, img_size, 3))
+
+    label = [-1, 'U']
 
     if len(detected) > 0:
         for i, d in enumerate(detected):
@@ -76,12 +73,7 @@ def classify(frame):
 
         # draw results
         for i, d in enumerate(detected):
-            label = [int(predicted_ages[i]),"M" if predicted_genders[i][0] < 0.5 else "F"]
+            label[0] = int(predicted_ages[i])
+            label[1] = "M" if predicted_genders[i][0] < 0.5 else "F"
 
-            if(len(label) != 2):
-                label[0] = -1
-                label[1] = "U"
-
-            result_prediction.append(label)
-
-    return result_prediction
+    return label
