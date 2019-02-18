@@ -19,8 +19,9 @@
 
         #slider {
             background-color: white;
-            width: 30%;
+            width: 25%;
             vertical-align: middle;
+            z-index: -1;
         }
 
         #iframe {
@@ -28,7 +29,7 @@
         }
 
         #slider img {
-            width: auto;
+            width: 100%;
             margin: auto;
             height: auto;
         }
@@ -36,12 +37,13 @@
         #control {
             position: fixed;
             bottom: 0;
-            right: 0;
+            left: 0;
         }
 
         #control > img {
-            height: 30vh;
-            opacity: 0.7;
+            width: 25vw;
+            opacity: 1;
+            z-index: 99
         }
 
         #control #debug {
@@ -96,9 +98,9 @@
                 else age_label = 'c';
                 if (evt.data == 'idle') is_remote_page_idle = true;
                 if (evt.data == 'active') is_remote_page_idle = false;
+                $('#debug').text(JSON.stringify(classification));
             }
 
-            $('#debug').text(gender_label);
             try {
                 $('#iframe')[0].contentWindow.location.href;
                 $('#iframe')[0].contentWindow.postMessage(labels_to_type(gender_label, age_label), '*');
