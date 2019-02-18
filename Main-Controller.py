@@ -1,6 +1,6 @@
 #from Camera import Camera
 #from Detector import Detector
-from classifier.Classifier import startClassifier
+from classifier.Classifier import startClassifierImages, startClassifierStream
 from data_treatment.Post_Cleanup import cleanup
 
 camera = 0
@@ -9,7 +9,7 @@ dataLabel = []
 
 def main():
 
-    rawData = startClassifier()
+    rawData = startClassifierImages("D://Users/Denis/images")
 
     dataLabel = cleanup(rawData)
     print(dataLabel)

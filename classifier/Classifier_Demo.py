@@ -4,7 +4,7 @@ import dlib
 import numpy as np
 import argparse
 from contextlib import contextmanager
-from wide_resnet import WideResNet
+from classifier.wide_resnet import WideResNet
 import time
 from keras.utils.data_utils import get_file
 

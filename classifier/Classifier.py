@@ -23,9 +23,9 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def startClassifier():
+def startClassifierImages(path):
     print("hello")
-    image_dir = Path("D://Users/Denis/images")
+    image_dir = path
     frames = []
 
     for image_path in image_dir.glob("*.*"):
@@ -38,6 +38,14 @@ def startClassifier():
         cv2.resize(img, (int(w * r), int(h * r)))
         frames.append(img)
     return classify(frames)
+
+    #for frame in listOfFrames:
+     #   listOfLabels = classify(frame)
+      #  print(listOfLabels)
+
+def startClassifierStream(list):
+
+    return classify(list)
 
     #for frame in listOfFrames:
      #   listOfLabels = classify(frame)
