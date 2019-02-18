@@ -14,7 +14,7 @@ from reporting.web import show_frame, show_detected
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 # cooldown time in seconds, the time to wait before a new detection is used
-cooldown_time = 5
+cooldown_time = 3
 cooldown_start_time = None
 
 last_labels = Classification('unknown', 'unknown', 'unknown', -1)
@@ -46,7 +46,7 @@ def every_frame(frame):
     # no cooldown
     if cooldown_start_time is None:
         cooldown_start_time = datetime.now()
-        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - (cooldown_time / 2))
+        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
 
         classification = classify_stream(detected_frames)
 
