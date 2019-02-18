@@ -8,10 +8,11 @@ from classifier.wide_resnet import WideResNet
 import time
 from keras.utils.data_utils import get_file
 
-pretrained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
-modhash = 'fbe63257a054c1c5466cfd7bf14646d6'
+pre_trained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
+mod_hash = 'fbe63257a054c1c5466cfd7bf14646d6'
 
-def startClassifierImages(path):
+
+def start_classifier_images(path):
     print("hello")
     image_dir = path
     frames = []
@@ -26,9 +27,10 @@ def startClassifierImages(path):
         frames.append(img)
     return classify(frames)
 
-def startClassifierStream(frame):
 
+def start_classifier_stream(frame):
     return classify(frame)
+
 
 def classify(frame):
     depth = 16
@@ -44,15 +46,14 @@ def classify(frame):
     model = WideResNet(img_size, depth=depth, k=width)()
     model.load_weights(weight_file)
 
-
-    #Loads in images
+    # Loads in images
     image = frame
-    resultPrediction = []
+    result_prediction = []
 
     input_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img_h, img_w, _ = np.shape(input_img)
 
-    #detect faces using dlib detector
+    # detect faces using dlib detector
     detected = detector(input_img, 1)
     faces = np.empty((len(detected), img_size, img_size, 3))
 
@@ -73,12 +74,9 @@ def classify(frame):
         ages = np.arange(0, 101).reshape(101, 1)
         predicted_ages = results[1].dot(ages).flatten()
 
-
         # draw results
         for i, d in enumerate(detected):
-            label = []
-            label.append(int(predicted_ages[i]))
-            label.append("M" if predicted_genders[i][0] < 0.5 else "F")
-            resultPrediction.append(label)
+            label = [int(predicted_ages[i]), "M" if predicted_genders[i][0] < 0.5 else "F"]
+            result_prediction.append(label)
 
-    return resultPrediction
+    return result_prediction

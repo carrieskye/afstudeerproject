@@ -1,8 +1,8 @@
+import time
 from typing import Callable
 
-import time
-from picamera.array import PiRGBArray
 from picamera import PiCamera
+from picamera.array import PiRGBArray
 
 
 def stream_video(result_callback: Callable):
@@ -11,7 +11,7 @@ def stream_video(result_callback: Callable):
     camera.framerate = 32
     raw_capture = PiRGBArray(camera, size=(640, 480))
 
-    # allow the camera to warmup
+    # allow the camera to warm up
     time.sleep(0.1)
 
     for raw_frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):

@@ -1,13 +1,13 @@
 import numpy
 from datetime import datetime
-from classifier.all_classifiers import Classification
+from classifier.classifier import Classification
 
-from cameras.laptopcam import stream_video
+from cameras.laptop_cam import stream_video
 # from detectors.simple import detect_face
 from detectors.rollingcaro import detect_face, get_detected_frames
 # from reporting.popup import show_frame, show_detected
 from reporting.web import show_frame, show_detected
-from classifier.all_classifiers import classify_stream
+from classifier.classifier import classify_stream
 
 # cascada to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -17,7 +17,7 @@ cooldown_time = 5
 
 cooldown_start_time = None
 
-last_labels = Classification("unknown", "unknown")
+last_labels = Classification('unknown', 'unknown', 'unknown', -1)
 
 
 def every_frame(frame):

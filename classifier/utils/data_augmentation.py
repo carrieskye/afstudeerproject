@@ -1,11 +1,13 @@
-import numpy as np
 from random import shuffle
-from .preprocessor import preprocess_input
+
+import cv2
+import numpy as np
+import scipy.ndimage as ndi
+
 from .preprocessor import _imread as imread
 from .preprocessor import _imresize as imresize
+from .preprocessor import preprocess_input
 from .preprocessor import to_categorical
-import scipy.ndimage as ndi
-import cv2
 
 
 class ImageGenerator(object):
@@ -18,6 +20,7 @@ class ImageGenerator(object):
             - Random crop
             - Test other transformations
     """
+
     def __init__(self, ground_truth_data, batch_size, image_size,
                  train_keys, validation_keys,
                  ground_truth_transformer=None,
@@ -73,8 +76,8 @@ class ImageGenerator(object):
 
         image_array = np.rollaxis(image_array, axis=-1, start=0)
         image_channel = [ndi.interpolation.affine_transform(image_channel,
-                         crop_matrix, offset=offset, order=0, mode='nearest',
-                         cval=0.0) for image_channel in image_array]
+                                                            crop_matrix, offset=offset, order=0, mode='nearest',
+                                                            cval=0.0) for image_channel in image_array]
 
         image_array = np.stack(image_channel, axis=0)
         image_array = np.rollaxis(image_array, 0, 3)
@@ -95,8 +98,8 @@ class ImageGenerator(object):
 
         image_array = np.rollaxis(image_array, axis=-1, start=0)
         image_channel = [ndi.interpolation.affine_transform(image_channel,
-                         crop_matrix, offset=offset, order=0, mode='nearest',
-                         cval=0.0) for image_channel in image_array]
+                                                            crop_matrix, offset=offset, order=0, mode='nearest',
+                                                            cval=0.0) for image_channel in image_array]
 
         image_array = np.stack(image_channel, axis=0)
         image_array = np.rollaxis(image_array, 0, 3)
@@ -171,64 +174,64 @@ class ImageGenerator(object):
         return preprocess_input(image_array)
 
     def flow(self, mode='train'):
-            while True:
-                if mode == 'train':
-                    shuffle(self.train_keys)
-                    keys = self.train_keys
-                elif mode == 'val' or mode == 'demo':
-                    shuffle(self.validation_keys)
-                    keys = self.validation_keys
-                else:
-                    raise Exception('invalid mode: %s' % mode)
+        while True:
+            if mode == 'train':
+                shuffle(self.train_keys)
+                keys = self.train_keys
+            elif mode == 'val' or mode == 'demo':
+                shuffle(self.validation_keys)
+                keys = self.validation_keys
+            else:
+                raise Exception('invalid mode: %s' % mode)
 
-                inputs = []
-                targets = []
-                for key in keys:
-                    image_path = self.path_prefix + key
-                    image_array = imread(image_path)
-                    image_array = imresize(image_array, self.image_size)
+            inputs = []
+            targets = []
+            for key in keys:
+                image_path = self.path_prefix + key
+                image_array = imread(image_path)
+                image_array = imresize(image_array, self.image_size)
 
-                    num_image_channels = len(image_array.shape)
-                    if num_image_channels != 3:
-                        continue
+                num_image_channels = len(image_array.shape)
+                if num_image_channels != 3:
+                    continue
 
-                    ground_truth = self.ground_truth_data[key]
+                ground_truth = self.ground_truth_data[key]
 
-                    if self.do_random_crop:
-                        image_array = self._do_random_crop(image_array)
+                if self.do_random_crop:
+                    image_array = self._do_random_crop(image_array)
 
-                    image_array = image_array.astype('float32')
-                    if mode == 'train' or mode == 'demo':
-                        if self.ground_truth_transformer is not None:
-                            image_array, ground_truth = self.transform(
-                                                                image_array,
-                                                                ground_truth)
-                            ground_truth = (
-                                self.ground_truth_transformer.assign_boxes(
-                                                            ground_truth))
-                        else:
-                            image_array = self.transform(image_array)[0]
+                image_array = image_array.astype('float32')
+                if mode == 'train' or mode == 'demo':
+                    if self.ground_truth_transformer is not None:
+                        image_array, ground_truth = self.transform(
+                            image_array,
+                            ground_truth)
+                        ground_truth = (
+                            self.ground_truth_transformer.assign_boxes(
+                                ground_truth))
+                    else:
+                        image_array = self.transform(image_array)[0]
 
-                    if self.grayscale:
-                        image_array = cv2.cvtColor(
-                                image_array.astype('uint8'),
-                                cv2.COLOR_RGB2GRAY).astype('float32')
-                        image_array = np.expand_dims(image_array, -1)
+                if self.grayscale:
+                    image_array = cv2.cvtColor(
+                        image_array.astype('uint8'),
+                        cv2.COLOR_RGB2GRAY).astype('float32')
+                    image_array = np.expand_dims(image_array, -1)
 
-                    inputs.append(image_array)
-                    targets.append(ground_truth)
-                    if len(targets) == self.batch_size:
-                        inputs = np.asarray(inputs)
-                        targets = np.asarray(targets)
-                        # this will not work for boxes
-                        targets = to_categorical(targets)
-                        if mode == 'train' or mode == 'val':
-                            inputs = self.preprocess_images(inputs)
-                            yield self._wrap_in_dictionary(inputs, targets)
-                        if mode == 'demo':
-                            yield self._wrap_in_dictionary(inputs, targets)
-                        inputs = []
-                        targets = []
+                inputs.append(image_array)
+                targets.append(ground_truth)
+                if len(targets) == self.batch_size:
+                    inputs = np.asarray(inputs)
+                    targets = np.asarray(targets)
+                    # this will not work for boxes
+                    targets = to_categorical(targets)
+                    if mode == 'train' or mode == 'val':
+                        inputs = self.preprocess_images(inputs)
+                        yield self._wrap_in_dictionary(inputs, targets)
+                    if mode == 'demo':
+                        yield self._wrap_in_dictionary(inputs, targets)
+                    inputs = []
+                    targets = []
 
     def _wrap_in_dictionary(self, image_array, targets):
         return [{'input_1': image_array},

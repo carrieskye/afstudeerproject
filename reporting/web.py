@@ -1,17 +1,18 @@
-from flask import Flask, render_template, Response, send_from_directory
-from classifier.all_classifiers import Classification
-
-import cv2
 import threading
 import time
+
+import cv2
+from flask import Flask, render_template, Response, send_from_directory
 from simple_websocket_server import WebSocketServer, WebSocket
+
+from classifier.classifier import Classification
 
 app = Flask(__name__, static_url_path='')
 
 current_frame = None
 changed = False
 
-last_labels = Classification("unknown", "unknown")
+last_labels = Classification('unknown', 'unknown', 'unknown', -1)
 
 
 def show_detected(labels):
@@ -28,8 +29,11 @@ def show_frame(frame):
     global changed
     current_frame = frame
 
-    if last_labels.gender != 'unknown' or last_labels.emotion != 'unknown':
-        cv2.putText(frame, "[" + last_labels.gender + ", " + last_labels.emotion + "]", (15, 120), 2, 1, (0, 0, 0))
+    if last_labels.gender != 'unknown' or last_labels.gender2 != 'unknown' or \
+            last_labels.emotion != 'unknown' or last_labels.age != -1:
+        label_text = "[" + last_labels.gender + ", " + last_labels.gender2 + ", " + last_labels.emotion + ", " \
+                     + last_labels.age + "]"
+        cv2.putText(frame, label_text, (15, 120), 2, 1, (0, 0, 0))
 
     changed = True
 

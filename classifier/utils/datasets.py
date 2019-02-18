@@ -1,14 +1,16 @@
-from scipy.io import loadmat
-import pandas as pd
-import numpy as np
-from random import shuffle
 import os
+from random import shuffle
+
 import cv2
+import numpy as np
+import pandas as pd
+from scipy.io import loadmat
 
 
 class DataManager(object):
     """Class for loading fer2013 emotion classification dataset or
         imdb gender classification dataset."""
+
     def __init__(self, dataset_name='imdb',
                  dataset_path=None, image_size=(48, 48)):
 
@@ -25,7 +27,7 @@ class DataManager(object):
             self.dataset_path = '../datasets/KDEF/'
         else:
             raise Exception(
-                    'Incorrect dataset name, please input imdb or fer2013')
+                'Incorrect dataset name, please input imdb or fer2013')
 
     def get_data(self):
         if self.dataset_name == 'imdb':
@@ -37,13 +39,13 @@ class DataManager(object):
         return ground_truth_data
 
     def _load_imdb(self):
-        face_score_treshold = 3
+        face_score_threshold = 3
         dataset = loadmat(self.dataset_path)
         image_names_array = dataset['imdb']['full_path'][0, 0][0]
         gender_classes = dataset['imdb']['gender'][0, 0][0]
         face_score = dataset['imdb']['face_score'][0, 0][0]
         second_face_score = dataset['imdb']['second_face_score'][0, 0][0]
-        face_score_mask = face_score > face_score_treshold
+        face_score_mask = face_score > face_score_threshold
         second_face_score_mask = np.isnan(second_face_score)
         unknown_gender_mask = np.logical_not(np.isnan(gender_classes))
         mask = np.logical_and(face_score_mask, second_face_score_mask)
@@ -139,7 +141,7 @@ def split_imdb_data(ground_truth_data, validation_split=.2, do_shuffle=False):
 
 def split_data(x, y, validation_split=.2):
     num_samples = len(x)
-    num_train_samples = int((1 - validation_split)*num_samples)
+    num_train_samples = int((1 - validation_split) * num_samples)
     train_x = x[:num_train_samples]
     train_y = y[:num_train_samples]
     val_x = x[num_train_samples:]
