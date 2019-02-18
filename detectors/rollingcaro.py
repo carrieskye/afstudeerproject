@@ -1,8 +1,8 @@
 import time
-import cv2
-import webbrowser
 
-from utils import print_header, print_row, format_percentage
+import cv2
+
+from utils import print_row, format_percentage
 
 
 class Capture:
@@ -23,7 +23,7 @@ class Capture:
 
 start = time.time()
 captured_frames = 0
-print_header(19, ["FIRST", "LAST", "DIFF", "FULL-RATIO", "RECENT-RATIO", "DETECTED"])
+# print_header(19, ["FIRST", "LAST", "DIFF", "FULL-RATIO", "RECENT-RATIO", "DETECTED"])
 
 # Collection of all captures of
 #   * the captures of the [detection_duration] last milliseconds if no one is detected
@@ -97,8 +97,6 @@ def update_captures(new_faces, frame, now):
         if (now - start) > detection_duration / 1000:
             # The person becomes detected if the ratio becomes greater than the [detection_ratio_min].
             if get_detection_hit_ratio(all_captures) > detection_ratio_min:
-                if not detected:
-                    webbrowser.open('https://www.torfs.be/nl/home', new=2)
                 detected = True
             # The person is no longer detected if the ratio becomes lower than the [overall_ratio_min] or has a
             # recent hit ratio that's lower than the [leaving_ratio_min].
@@ -106,7 +104,7 @@ def update_captures(new_faces, frame, now):
                     or recent_hits_ratio(now) < leaving_ratio_min:
                 detected = False
 
-        print_capture_row(now)
+        # print_capture_row(now)
 
 
 def print_capture_row(now):

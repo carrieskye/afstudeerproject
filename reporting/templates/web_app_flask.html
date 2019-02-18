@@ -66,8 +66,8 @@
         };
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
-            if (evt.data == 'MALE') label = 'm';
-            if (evt.data == 'FEMALE') label = 'f';
+            if (evt.data.includes('man')) label = 'm';
+            if (evt.data.includes('woman')) label = 'f';
             $('iframe').attr('src', '/static/webshop.html?label=' + evt.data);
         };
         $('#slider').slick({
