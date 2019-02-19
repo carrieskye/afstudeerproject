@@ -3,13 +3,17 @@ from classifier.emotion import classify_emotion
 
 
 def start_classify_stream(frames, callback_when_done):
+    callback_when_done(classify_stream(frames))
+
+
+def classify_stream(frames):
     """Will start classifiying all frames and run the callback"""
     classifications = []
     for frame in frames:
         classification = classify(frame)
         print(classification)
         classifications.append(classification)
-    callback_when_done(classifications)
+    return classifications
 
 
 def classify(frame):
