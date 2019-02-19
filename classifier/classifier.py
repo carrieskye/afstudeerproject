@@ -1,9 +1,13 @@
 from classifier.age_gender import start_classifier_stream
 from classifier.emotion import classify_emotion
-from classifier.gender import classify_gender
+
+
+def start_classify_stream(frames, callback_when_done):
+    callback_when_done(classify_stream(frames))
 
 
 def classify_stream(frames):
+    """Will start classifiying all frames and run the callback"""
     classifications = []
     for frame in frames:
         classification = classify(frame)
@@ -21,6 +25,7 @@ def classify(frame):
 
     new_classification = Classification(gender_label, emotion_label, age_label)
     return new_classification
+
 
 class Classification:
 

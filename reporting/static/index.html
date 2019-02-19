@@ -57,13 +57,13 @@
 </head>
 <body>
 <div id="control">
-    <img id="video" src="{{ url_for('video_viewer') }}">
+    <img id="video" src="/video_viewer">
     <div id="debug"></div>
 </div>
 <div id="content">
     <div id="slider">
-        <div><img src="/static/img/c_f_1.png" alt=""/></div>
-        <div><img src="/static/img/c_f_2.png" alt=""/></div>
+        <div><img src="/static/img/c_m_1.png" alt=""/></div>
+        <div><img src="/static/img/c_m_2.png" alt=""/></div>
     </div>
     <iframe id="iframe" src="/static/webshop-torfs.html"></iframe>
 </div>
@@ -75,27 +75,27 @@
     var is_remote_page_idle = false;
 
     function labels_to_type(gender_label, age_label) {
-        if (gender_label === 'm' && age_label === 'a') return 'heren';
-        if (gender_label === 'f' && age_label === 'a') return 'dames';
-        if (gender_label === 'm' && age_label === 'c') return 'jongens';
-        if (gender_label === 'f' && age_label === 'c') return 'meisjes';
+        if (gender_label === 'M' && age_label === 'A') return 'heren';
+        if (gender_label === 'F' && age_label === 'A') return 'dames';
+        if (gender_label === 'M' && age_label === 'C') return 'jongens';
+        if (gender_label === 'F' && age_label === 'C') return 'meisjes';
     }
 
     $(document).ready(function () {
         const ws = new WebSocket("ws://localhost:5001/");
         const slides = [1, 2, 3, 4];
         let slide = 2;
-        let gender_label = 'f';
-        let age_label = 'a';
+        let gender_label = 'M';
+        let age_label = 'C';
 
         ws.onmessage = function (evt) {
             console.log('socket message', evt.data);
             if (evt.data !== undefined) {
                 const classification = jQuery.parseJSON(evt.data);
-                if (classification.gender === 'm') gender_label = 'm';
-                else gender_label = 'f';
-                if (classification.age > 12) age_label = 'a';
-                else age_label = 'c';
+                if (classification.gender === 'M') gender_label = 'M';
+                else gender_label = 'F';
+                if (classification.age > 12) age_label = 'A';
+                else age_label = 'C';
                 if (evt.data == 'idle') is_remote_page_idle = true;
                 if (evt.data == 'active') is_remote_page_idle = false;
                 $('#debug').text(JSON.stringify(classification));

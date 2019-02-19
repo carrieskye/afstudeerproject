@@ -9,4 +9,4 @@ def show_frame(frame):
 
 
 def show_detected(label):
-    print("label detected" + label)
+    print("label detected" + str(label))

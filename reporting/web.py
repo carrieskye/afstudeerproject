@@ -3,7 +3,7 @@ import threading
 import time
 
 import cv2
-from flask import Flask, render_template, Response, send_from_directory
+from flask import Flask, Response, send_from_directory
 from simple_websocket_server import WebSocketServer, WebSocket
 
 from classifier.classifier import Classification
@@ -49,7 +49,7 @@ def get_latest_frame():
 
 @app.route('/')
 def index():
-    return render_template('web_app_flask.html')
+    return app.send_static_file('index.html')
 
 
 @app.route('/video_viewer')

@@ -1,15 +1,17 @@
 from datetime import datetime
+import argparse
+import importlib
 
 import numpy
 
 from cameras.laptop_cam import stream_video
 from classifier.classifier import Classification
-from classifier.classifier import classify_stream
+from classifier.classifier import start_classify_stream
 from detectors.rolling_caro import detect_face, get_detected_frames
-# from detectors.simple import detect_face
-from reporting.web import show_frame, show_detected
-#from reporting.web import show_frame, show_detected
 from data_treatment.post_processor import cleanup
+
+# Reporting is loaded based on arguments, see main()
+reporting = None
 
 # cascade to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -29,11 +31,11 @@ def every_frame(frame):
 
     # if we haven't detected a person don't do anything
     if not person_detected:
-        show_frame(frame)
+        reporting.show_frame(frame)
         return
 
     # show the person we detected
-    show_frame(frame_with_face)
+    reporting.show_frame(frame_with_face)
 
     if cooldown_start_time is not None:
         since_detected = (datetime.now() - cooldown_start_time).total_seconds()
@@ -49,18 +51,36 @@ def every_frame(frame):
         cooldown_start_time = datetime.now()
         detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
 
-        classification_results = classify_stream(detected_frames)
+        start_classify_stream(detected_frames, classification_done)
 
-        classification = cleanup(classification_results)
 
-        if last_labels is not classification:
-            last_labels = classification
-
-        label_action(last_labels)
+def classification_done(classification_results):
+    classification = cleanup(classification_results)
+    label_action(classification)
 
 
 def label_action(labels):
-    show_detected(labels)
+    reporting.show_detected(labels)
 
 
-stream_video(every_frame)
+def main():
+    global reporting
+    args = get_args()
+    # load either web or pop-up reporting based on args
+    reporting_module = 'reporting.' + ('web' if args.web else 'popup')
+    print("Loading " + reporting_module)
+    reporting = importlib.import_module(reporting_module)
+    stream_video(every_frame)
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description="This script will launch the project",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--web", type=bool, default=False,
+                        help="Serve web-page instead of showing pop-up")
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == '__main__':
+    main()
