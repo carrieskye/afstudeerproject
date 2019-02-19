@@ -124,7 +124,7 @@ def detect_face(frame, cascade_path):
     cropped_faces = []
 
     for (x, y, w, h) in faces:
-        cropped_face = frame[y:y + h, x:x + w]
+        cropped_face = frame[y - int(h / 10):y + int(h * 11 / 10), x - int(w / 10):x + int(w * 11 / 10)]
         cropped_faces.append(cropped_face)
 
     update_captures(cropped_faces, current_time)
