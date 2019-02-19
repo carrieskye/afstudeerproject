@@ -1,4 +1,4 @@
-from classifier.classifier import *
+from classifier.classification import Classification
 
 
 def cleanup(unprocessed_data):
