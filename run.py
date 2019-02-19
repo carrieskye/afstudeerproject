@@ -6,7 +6,7 @@ import numpy
 
 from cameras.laptop_cam import stream_video
 from classifier.classifier import Classification
-from classifier.classifier import classify_stream
+from classifier.classifier import start_classify_stream
 from detectors.rolling_caro import detect_face, get_detected_frames
 from data_treatment.post_processor import cleanup
 
@@ -51,14 +51,12 @@ def every_frame(frame):
         cooldown_start_time = datetime.now()
         detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
 
-        classification_results = classify_stream(detected_frames)
+        start_classify_stream(detected_frames, classification_done)
 
-        classification = cleanup(classification_results)
 
-        if last_labels is not classification:
-            last_labels = classification
-
-        label_action(last_labels)
+def classification_done(classification_results):
+    classification = cleanup(classification_results)
+    label_action(classification)
 
 
 def label_action(labels):
