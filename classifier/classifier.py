@@ -1,3 +1,7 @@
+# Disable verbose tensorflow warnings
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
+
 from classifier.age_gender import start_classifier_stream
 from .classification import Classification
 from classifier.emotion import classify_emotion
