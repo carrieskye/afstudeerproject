@@ -2,20 +2,21 @@ from classifier.age_gender import start_classifier_stream
 from .classification import Classification
 from classifier.emotion import classify_emotion
 
-
-def start_classify_stream(frames, callback_when_done):
-    callback_when_done(classify_stream(frames))
+classifications = {}
 
 
-def classify_stream(frames):
-    """Will start classifiying all frames and run the callback"""
-    print("Will classify " + str(len(frames)))
-    classifications = []
+def start_classify_stream(person_id, frames, callback_when_done):
+    if person_id not in classifications.keys():
+        classifications[person_id] = []
+    callback_when_done(classify_stream(person_id, frames))
+
+
+def classify_stream(person_id, frames):
+    """Will start classifying all frames and run the callback"""
     for frame in frames:
         classification = classify(frame)
-        #print(classification)
-        classifications.append(classification)
-    return classifications
+        classifications[person_id].append(classification)
+    return classifications[person_id]
 
 
 def classify(frame):
@@ -27,5 +28,13 @@ def classify(frame):
 
     new_classification = Classification(gender_label, emotion_label, age_label)
     return new_classification
+
+
+def get_classifications():
+    return classifications
+
+
+def get_classifications_of_person(person_id):
+    return classifications[person_id]
 
 

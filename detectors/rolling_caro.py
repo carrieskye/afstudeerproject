@@ -2,20 +2,14 @@ import time
 
 import cv2
 
-from utils import print_row, format_percentage
-
 
 class Capture:
 
-    def __init__(self, absolute_start, timestamp, frame, hit):
+    def __init__(self, absolute_start, timestamp, face, hit):
         self.timestamp = timestamp
         self.timestamp_relative = timestamp - absolute_start
+        self.face = face
         self.hit = hit
-
-        if hit:
-            self.frame = frame
-        else:
-            self.frame = None
 
     def __str__(self):
         return ("HIT" if self.hit else "FAIL") + " [" + str(format(self.timestamp_relative, '.2f')) + "s] "
@@ -23,7 +17,6 @@ class Capture:
 
 start = time.time()
 captured_frames = 0
-# print_header(19, ["FIRST", "LAST", "DIFF", "FULL-RATIO", "RECENT-RATIO", "DETECTED"])
 
 # Collection of all captures of
 #   * the captures of the [detection_duration] last milliseconds if no one is detected
@@ -80,12 +73,17 @@ def recent_hits_ratio(now):
     return get_detection_hit_ratio(recent_captures)
 
 
-def update_captures(new_faces, frame, now):
+def update_captures(cropped_faces, now):
     global detected
 
+    if len(cropped_faces) == 0:
+        new_capture = Capture(start, time.time(), None, False)
+        all_captures.append(new_capture)
+
     # Add the new capture to the list of captures.
-    new_capture = Capture(start, time.time(), frame, len(new_faces) > 0)
-    all_captures.append(new_capture)
+    for face in cropped_faces:
+        new_capture = Capture(start, time.time(), face, True)
+        all_captures.append(new_capture)
 
     if len(all_captures) > 0:
         # If no one is detected, we remove all capture that are older than the [detection_duration].
@@ -103,19 +101,6 @@ def update_captures(new_faces, frame, now):
             if get_detection_hit_ratio(all_captures) < overall_ratio_min \
                     or recent_hits_ratio(now) < leaving_ratio_min:
                 detected = False
-
-        # print_capture_row(now)
-
-
-def print_capture_row(now):
-    first = all_captures[0]
-    last = all_captures[len(all_captures) - 1]
-    difference = format(last.timestamp - first.timestamp, '.2f')
-    full_ratio = format_percentage(get_detection_hit_ratio(all_captures))
-    recent_ratio = format_percentage(recent_hits_ratio(now))
-    is_detected = "YES" if detected else "NO"
-
-    print_row(19, [str(first), str(last), difference, full_ratio, recent_ratio, is_detected])
 
 
 def detect_face(frame, cascade_path):
@@ -136,7 +121,13 @@ def detect_face(frame, cascade_path):
         minSize=(min_face_size, min_face_size)
     )
 
-    update_captures(faces, frame, current_time)
+    cropped_faces = []
+
+    for (x, y, w, h) in faces:
+        cropped_face = frame[y - int(h / 10):y + int(h * 11 / 10), x - int(w / 10):x + int(w * 11 / 10)]
+        cropped_faces.append(cropped_face)
+
+    update_captures(cropped_faces, current_time)
 
     # Show FPS on frame
     fps = round(captured_frames / (current_time - start))
@@ -161,5 +152,5 @@ def get_detected_frames(timestamp):
     detected_frames = []
     for capture in all_captures:
         if capture.hit and capture.timestamp > timestamp:
-            detected_frames.append(capture.frame)
+            detected_frames.append(capture.face)
     return detected_frames

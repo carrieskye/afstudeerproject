@@ -51,7 +51,10 @@ def every_frame(frame):
         cooldown_start_time = datetime.now()
         detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
 
-        start_classify_stream(detected_frames, classification_done)
+        # here we want the iterate over the identified persons and classify their frames
+        persons = ["caro"]
+        for person in persons:
+            start_classify_stream(person, detected_frames, classification_done)
 
 
 def classification_done(classification_results):
