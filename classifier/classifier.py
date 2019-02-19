@@ -1,4 +1,5 @@
 from classifier.age_gender import start_classifier_stream
+from .classification import Classification
 from classifier.emotion import classify_emotion
 
 
@@ -8,10 +9,11 @@ def start_classify_stream(frames, callback_when_done):
 
 def classify_stream(frames):
     """Will start classifiying all frames and run the callback"""
+    print("Will classify " + str(len(frames)))
     classifications = []
     for frame in frames:
         classification = classify(frame)
-        print(classification)
+        #print(classification)
         classifications.append(classification)
     return classifications
 
@@ -27,12 +29,3 @@ def classify(frame):
     return new_classification
 
 
-class Classification:
-
-    def __init__(self, gender, emotion, age):
-        self.gender = gender
-        self.emotion = emotion
-        self.age = age
-
-    def __str__(self):
-        return "[" + str(self.gender) + ", " + str(self.emotion) + ", " + str(self.age) + "]"
