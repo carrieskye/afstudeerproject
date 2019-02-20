@@ -9,7 +9,7 @@ from detectors.simple import detect_face
 from recognition.identify import get_identifications
 
 # Reporting is loaded based on arguments, see main()
-# TODO: this is not ideal since IDE's cannot work with this
+# TODO: this is not ideal since IDEs cannot work with this
 reporting = None
 
 # cascade to use with opencv to identify faces
@@ -22,7 +22,7 @@ people = {}
 def opencv_format_to_css(opencv_format):
     # css format is: top, right, bottom, left and used by face_recognition
     (x, y, w, h) = opencv_format
-    return x, y, x+w, y+h
+    return x, y, x + w, y + h
 
 
 def every_frame(frame, timestamp):
@@ -44,7 +44,7 @@ def every_frame(frame, timestamp):
         name = people_in_frame[index]
 
         # get classification for this face
-        classification = classify(frame, face, timestamp)
+        classification = classify(frame, face, timestamp, name)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:
@@ -54,10 +54,9 @@ def every_frame(frame, timestamp):
         people[name].append(classification)
 
         # get average age, most common gender and last emotion
-        average_age, most_common_gender, last_emotion = get_overall_classification(people[name])
+        overall_classification = get_overall_classification(people[name])
 
-        label = f'{name} ({average_age}/{most_common_gender}/{last_emotion})'
-        labels.append(label)
+        labels.append(overall_classification)
 
     # TODO: determine when to send the labels with label_action
 

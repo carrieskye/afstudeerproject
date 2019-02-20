@@ -2,19 +2,14 @@ import cv2
 import numpy as np
 from keras.models import load_model
 
-from .utils.datasets import get_labels
-from .utils.inference import load_detection_model
-
 # parameters for loading data and images
-detection_model_path = './models/face_classification/detection/haarcascade_frontalface_default.xml'
 emotion_model_path = './models/face_classification/emotion/fer2013_mini_XCEPTION.102-0.66.hdf5'
-emotion_labels = get_labels('fer2013')
+emotion_labels = {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'sad', 5: 'surprise', 6: 'neutral'}
 
 # hyper-parameters for bounding boxes shape
 emotion_offsets = (20, 40)
 
 # loading models
-face_detection = load_detection_model(detection_model_path)
 emotion_classifier = load_model(emotion_model_path, compile=False)
 
 # getting input model shapes for inference

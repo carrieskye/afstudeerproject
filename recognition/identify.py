@@ -1,6 +1,7 @@
-import face_recognition
 from os import listdir
 from os.path import isfile, join, realpath, dirname, splitext
+
+import face_recognition
 
 # here we store 128 point encodings
 known_face_encodings = []
