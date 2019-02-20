@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import signal
 
 import cv2
 import time
@@ -10,6 +11,7 @@ from classifier.classifier import classify
 from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from recognition.identify import get_identifications
+from utils import TimeBlock, timeblock_stats, timings_active
 
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDEs cannot work with this
@@ -30,13 +32,15 @@ def opencv_format_to_css(opencv_format):
 
 def every_frame(frame, timestamp):
     # get faces from detector
-    faces = detect_face(frame, cascadePath)
+    with TimeBlock('detection'):
+        faces = detect_face(frame, cascadePath)
 
     # convert opencv coordinates to css format
     faces_css = [opencv_format_to_css(face) for face in faces]
 
-    # get identifications for the faces
-    people_in_frame = get_identifications(frame, faces_css)
+    with TimeBlock('identification'):
+        # get identifications for the faces
+        people_in_frame = get_identifications(frame, faces_css)
 
     # labels for each person in the frame
     labels = []
@@ -57,7 +61,8 @@ def every_frame(frame, timestamp):
         people[name].append(classification)
 
         # get average age, most common gender and last emotion
-        overall_classification = get_overall_classification(people[name])
+        with TimeBlock('overall'):
+            overall_classification = get_overall_classification(people[name])
 
         labels.append(overall_classification)
 
@@ -74,8 +79,13 @@ def label_action(labels):
     reporting.show_detected(labels)
 
 
+def sigint_handler(signum, frame):
+    timeblock_stats()
+    raise SystemExit
+
+
 def main():
-    global reporting
+    global reporting, timings_active
     args = get_args()
     # load either web or pop-up reporting based on args
     reporting_module = 'reporting.' + ('web' if args.web else 'popup')
@@ -89,6 +99,11 @@ def main():
             raise SystemExit
         return
 
+    if args.timings:
+        timings_active = True
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     # on every frame from the stream run stuff
     stream_video(every_frame)
 
@@ -98,6 +113,8 @@ def get_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--web", type=bool, default=False,
                         help="Serve web-page instead of showing pop-up")
+    parser.add_argument("--timings", type=bool, default=False,
+                        help="Show timings for every step")
     parser.add_argument("--file", type=str, default=None,
                         help="Run on image instead of webcam")
     args = parser.parse_args()
