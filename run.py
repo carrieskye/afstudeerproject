@@ -2,6 +2,7 @@ import argparse
 import importlib
 
 import cv2
+import time
 
 from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
@@ -84,7 +85,7 @@ def main():
 
     if args.file is not None:
         frame = cv2.imread(args.file)
-        every_frame(frame)
+        every_frame(frame, time.time())
         if cv2.waitKey() & 0xFF == ord('q'):
             raise SystemExit
         return
