@@ -1,9 +1,5 @@
 import math
 
-screen_width = 640
-screen_height = 360
-screen_middle = [screen_width / 2, screen_height / 2]
-
 
 class Position:
 
@@ -15,11 +11,15 @@ class Position:
         return "(" + str(self.surface) + ", " + str(int(self.distance)) + ")"
 
 
-def get_position(face):
+def get_position(frame, face):
     x, y, w, h = face
 
     # calculate the surface of the face
     surface = int(w * h / 1000)
+
+    # get frame dimensions
+    screen_height, screen_width, _ = frame.shape
+    screen_middle = [screen_width / 2, screen_height / 2]
 
     # find the middle point of the face
     face_middle = [x + (w / 2), y + (h / 2)]

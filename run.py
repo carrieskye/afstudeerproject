@@ -49,7 +49,7 @@ def every_frame(frame, timestamp):
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
         # get the positioning of the person
-        position = get_position(face)
+        position = get_position(frame, face)
 
         # get the name of the current face
         name = people_in_frame[index]
