@@ -7,6 +7,7 @@ font = cv2.FONT_HERSHEY_DUPLEX
 
 
 def annotate_frame(original_frame, faces, labels, copy=False):
+    """Put labels for each face on the frame"""
     # if we want to keep the original frame fresh
     frame = numpy.copy(original_frame) if copy else original_frame
 
