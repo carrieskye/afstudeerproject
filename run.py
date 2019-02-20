@@ -12,7 +12,7 @@ from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from positioning.simple import get_position
 from recognition.identify import get_identifications
-from utils import TimeBlock, timeblock_stats, timings_active
+from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDEs cannot work with this
@@ -23,6 +23,9 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 # dictionary with person -> classifications
 people = {}
+
+# Print classifications as we get them
+print_classification = False
 
 
 def opencv_format_to_css(opencv_format):
@@ -56,7 +59,10 @@ def every_frame(frame, timestamp):
 
         # get classification for this face
         classification = classify(frame, face, timestamp, name, position)
-        print(classification)
+
+        # if we want to debug we can print the classification
+        if print_classification:
+            print(classification)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:
@@ -90,7 +96,7 @@ def sigint_handler(signum, frame):
 
 
 def main():
-    global reporting, timings_active
+    global reporting, print_classification
     args = get_args()
     # load either web or pop-up reporting based on args
     reporting_module = 'reporting.' + ('web' if args.web else 'popup')
@@ -104,8 +110,8 @@ def main():
             raise SystemExit
         return
 
-    if args.timings:
-        timings_active = True
+    if args.print_classification:
+        print_classification = True
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -118,10 +124,10 @@ def get_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--web", type=bool, default=False,
                         help="Serve web-page instead of showing pop-up")
-    parser.add_argument("--timings", type=bool, default=False,
-                        help="Show timings for every step")
     parser.add_argument("--file", type=str, default=None,
                         help="Run on image instead of webcam")
+    parser.add_argument("--print_classification", type=bool, default=False,
+                        help="Print classification as we get them")
     args = parser.parse_args()
     return args
 
