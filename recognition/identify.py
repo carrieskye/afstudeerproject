@@ -46,6 +46,8 @@ def get_identifications(frame, _faces, new_face_callback=None):
         # search it in the known_faces
         matches = face_recognition.compare_faces(known_face_encodings, encoding)
 
+        print(distances = face_recognition.face_distance(known_face_encodings, encoding))
+
         # if any of them match
         # TODO: We are taking the first match here, would be better to take best match using face_distance
         if True in matches:
