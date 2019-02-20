@@ -1,6 +1,7 @@
+import os
+
 import cv2
 import numpy as np
-import os
 
 from classifier.wide_resnet import WideResNet
 
@@ -18,21 +19,6 @@ model = WideResNet(img_size, depth=depth, k=width)()
 model.load_weights(weight_file)
 
 
-def start_classifier_images(path):
-    image_dir = path
-    frames = []
-
-    for image_path in image_dir.glob("*.*"):
-        print(image_path)
-        img = cv2.imread(str(image_path), 1)
-
-        h, w, _ = img.shape
-        r = 640 / max(w, h)
-        cv2.resize(img, (int(w * r), int(h * r)))
-        frames.append(img)
-    return classify(frames)
-
-
 def classify(frame, face):
     # TODO: the model works on multiple faces for some weird reason, we should support that
 
@@ -44,7 +30,7 @@ def classify(frame, face):
     img_h, img_w, _ = np.shape(input_frame)
     face_small_weird = np.empty((1, img_size, img_size, 3))
     x1, y1, w, h = face
-    x2, y2 = x1+w, y1+h
+    x2, y2 = x1 + w, y1 + h
     xw1 = max(int(x1 - margin * w), 0)
     yw1 = max(int(y1 - margin * h), 0)
     xw2 = min(int(x2 + margin * w), img_w - 1)
