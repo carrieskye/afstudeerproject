@@ -1,5 +1,6 @@
 from os import listdir
 from os.path import isfile, join, realpath, dirname, splitext
+import cv2
 
 import face_recognition
 
@@ -22,14 +23,15 @@ def load_faces_from_directory(directory):
         known_face_names.append(name)
 
 
-# load faces from ./people directory
-# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+#load faces from ./people directory
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
 def get_identifications(frame, _faces, new_face_callback=None):
     """Returns array with names of people"""
     # we get all encodings for the faces
-    rgb_small_frame = frame[:, :, ::-1]
+    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+    rgb_small_frame = small_frame[:, :, ::-1]
 
     # opencv is x y w h
     # dlib   is t r b l
