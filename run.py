@@ -1,6 +1,8 @@
 import argparse
 import importlib
 
+import cv2
+
 from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
 from classifier.classifier import classify
@@ -80,6 +82,13 @@ def main():
     print("Loading " + reporting_module)
     reporting = importlib.import_module(reporting_module)
 
+    if args.file is not None:
+        frame = cv2.imread(args.file)
+        every_frame(frame)
+        if cv2.waitKey() & 0xFF == ord('q'):
+            raise SystemExit
+        return
+
     # on every frame from the stream run stuff
     stream_video(every_frame)
 
@@ -89,6 +98,8 @@ def get_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--web", type=bool, default=False,
                         help="Serve web-page instead of showing pop-up")
+    parser.add_argument("--file", type=str, default=None,
+                        help="Run on image instead of webcam")
     args = parser.parse_args()
     return args
 
