@@ -15,6 +15,7 @@ def get_overall_classification(classifications):
     # get last timestamp, name and emotion
     last_timestamp = classifications[-1].timestamp
     last_name = classifications[-1].name
+    last_position = classifications[-1].position
     last_emotion = classifications[-1].emotion
 
-    return Classification(last_timestamp, last_name, most_common_gender, last_emotion, average_age)
+    return Classification(last_timestamp, last_name, last_position, most_common_gender, last_emotion, average_age)

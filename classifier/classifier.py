@@ -4,7 +4,7 @@ from utils import TimeBlock
 from .classification import Classification
 
 
-def classify(frame, face, timestamp, name):
+def classify(frame, face, timestamp, name, position):
     """Will return a classification for the supplied coordinates of the face in the supplied frame"""
     # age and gender
     with TimeBlock('age_gender'):
@@ -14,4 +14,4 @@ def classify(frame, face, timestamp, name):
     with TimeBlock('emotion'):
         emotion_label = classify_emotion(frame, face)
 
-    return Classification(timestamp, name, gender_label, emotion_label, age_label)
+    return Classification(timestamp, name, position, gender_label, emotion_label, age_label)

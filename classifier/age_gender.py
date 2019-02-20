@@ -10,7 +10,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 depth = 16
 width = 8
-weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
+weight_file = "./models/yu4u_age-gender-estimation/weights.29-3.76_utk.hdf5"
 margin = 0.4
 
 # load model and weights

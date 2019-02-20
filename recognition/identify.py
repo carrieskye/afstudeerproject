@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import isfile, join, realpath, dirname, splitext
 
+import cv2
 import face_recognition
 
 # here we store 128 point encodings
@@ -23,13 +24,14 @@ def load_faces_from_directory(directory):
 
 
 # load faces from ./people directory
-# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
 def get_identifications(frame, _faces, new_face_callback=None):
     """Returns array with names of people"""
     # we get all encodings for the faces
-    rgb_small_frame = frame[:, :, ::-1]
+    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+    rgb_small_frame = small_frame[:, :, ::-1]
 
     # opencv is x y w h
     # dlib   is t r b l
@@ -43,6 +45,8 @@ def get_identifications(frame, _faces, new_face_callback=None):
     for index, encoding in enumerate(face_encodings):
         # search it in the known_faces
         matches = face_recognition.compare_faces(known_face_encodings, encoding)
+
+        # print(distances=face_recognition.face_distance(known_face_encodings, encoding))
 
         # if any of them match
         # TODO: We are taking the first match here, would be better to take best match using face_distance
