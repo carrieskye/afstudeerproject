@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-
 from keras.models import load_model
 
 from .utils.datasets import get_labels
@@ -39,8 +38,6 @@ def preprocess_input(x, v2=True):
 
 
 def classify(frame, face):
-    emotion_text = 'unknown'
-
     gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     x1, x2, y1, y2 = apply_offsets(face, emotion_offsets)
@@ -52,7 +49,7 @@ def classify(frame, face):
         # resize
         gray_face = cv2.resize(gray_face, emotion_target_size)
     except:
-        return emotion_text
+        return "neutral"
     # cv2.imshow("face0", gray_face)
 
     gray_face = np.expand_dims(gray_face, 0)

@@ -1,15 +1,12 @@
 import argparse
 import importlib
-from functools import reduce
 
-import numpy as np
-from collections import Counter
-
+from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
 from classifier.classifier import classify
+from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from recognition.identify import get_identifications
-from annotate.simple import annotate_frame
 
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDE's cannot work with this
@@ -28,7 +25,7 @@ def opencv_format_to_css(opencv_format):
     return x, y, x+w, y+h
 
 
-def every_frame(frame):
+def every_frame(frame, timestamp):
     # get faces from detector
     faces = detect_face(frame, cascadePath)
 
@@ -47,7 +44,7 @@ def every_frame(frame):
         name = people_in_frame[index]
 
         # get classification for this face
-        classification = classify(frame, face)
+        classification = classify(frame, face, timestamp)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:
@@ -56,17 +53,8 @@ def every_frame(frame):
         # append this classification
         people[name].append(classification)
 
-        # get all classification of this person so far
-        classifications = people[name]
-
-        # get average age over all ages classifications
-        average_age = int(reduce(np.add, (c.age for c in classifications))/len(classifications))
-
-        # get most common gender label
-        most_common_gender = Counter(c.gender for c in classifications).most_common(1)[0][0]
-
-        # get last emotion
-        last_emotion = people[name][-1].emotion
+        # get average age, most common gender and last emotion
+        average_age, most_common_gender, last_emotion = get_overall_classification(people[name])
 
         label = f'{name} ({average_age}/{most_common_gender}/{last_emotion})'
         labels.append(label)
