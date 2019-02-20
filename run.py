@@ -1,65 +1,67 @@
-from datetime import datetime
 import argparse
 import importlib
-
-import numpy
+import numpy as np
+from collections import Counter
 
 from cameras.laptop_cam import stream_video
-from classifier.classifier import Classification
-from classifier.classifier import start_classify_stream
-from detectors.rolling_caro import detect_face, get_detected_frames
-from data_treatment.post_processor import cleanup
+from classifier.classifier import classify
+from detectors.simple import detect_face
+from recognition.identify import get_identifications
+from annotate.simple import annotate_frame
 
 # Reporting is loaded based on arguments, see main()
+# TODO: this is not ideal since IDE's cannot work with this
 reporting = None
 
 # cascade to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
-# cooldown time in seconds, the time to wait before a new detection is used
-cooldown_time = 3
-cooldown_start_time = None
+# dictionary with person -> classifications
+people = {}
 
-last_labels = Classification('unknown', 'unknown', -1)
+
+def opencv_format_to_css(opencv_format):
+    # css format is: top, right, bottom, left and used by face_recognition
+    (x, y, w, h) = opencv_format
+    return x, y, x+w, y+h
 
 
 def every_frame(frame):
-    global cooldown_start_time, last_labels
+    # get faces from detector
+    faces = detect_face(frame, cascadePath)
 
-    # detector
-    person_detected, frame_with_face = detect_face(numpy.copy(frame), cascadePath)
+    # convert opencv coordinates to css format
+    faces_css = [opencv_format_to_css(face) for face in faces]
 
-    # if we haven't detected a person don't do anything
-    if not person_detected:
-        reporting.show_frame(frame)
-        return
+    # get identifications for the faces
+    people_in_frame = get_identifications(frame, faces_css)
+
+    # labels for each person in the frame
+    labels = []
+
+    # here we want the iterate over the identified persons and classify them
+    for index, face in enumerate(faces):
+        classification = classify(frame, face)
+        # get the name of the current face
+        name_of_person = people_in_frame[index]
+        # if this is the first time initialise in the people dictionary
+        if name_of_person not in people:
+            people[name_of_person] = []
+        # append this classification
+        people[name_of_person].append(classification)
+        # append the name
+        label = name_of_person
+        # get average age over all ages predications
+        label += " age:" + str(int(np.average(list(map(lambda c: c.age, people[name_of_person])))))
+        # get most common gender label
+        label += " " + Counter(list(map(lambda c: c.gender, people[name_of_person]))).most_common(1)[0][0]
+        labels.append(label)
+
+    # annotate the frame
+    annotate_frame(frame, faces_css, labels)
 
     # show the person we detected
-    reporting.show_frame(frame_with_face)
-
-    if cooldown_start_time is not None:
-        since_detected = (datetime.now() - cooldown_start_time).total_seconds()
-
-        # we detected a person a while ago and are still in cooldown
-        if since_detected < cooldown_time:
-            pass
-        if since_detected > cooldown_time:
-            cooldown_start_time = None
-
-    # no cooldown
-    if cooldown_start_time is None:
-        cooldown_start_time = datetime.now()
-        detected_frames = get_detected_frames(cooldown_start_time.timestamp() - 1)
-
-        # here we want the iterate over the identified persons and classify their frames
-        persons = ["caro"]
-        for person in persons:
-            start_classify_stream(person, detected_frames, classification_done)
-
-
-def classification_done(classification_results):
-    classification = cleanup(classification_results)
-    label_action(classification)
+    reporting.show_frame(frame)
 
 
 def label_action(labels):
@@ -73,6 +75,8 @@ def main():
     reporting_module = 'reporting.' + ('web' if args.web else 'popup')
     print("Loading " + reporting_module)
     reporting = importlib.import_module(reporting_module)
+
+    # on every frame from the stream run stuff
     stream_video(every_frame)
 
 

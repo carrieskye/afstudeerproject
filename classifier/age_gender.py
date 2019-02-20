@@ -1,19 +1,16 @@
 import cv2
-import dlib
 import numpy as np
+import os
 
 from classifier.wide_resnet import WideResNet
 
-pre_trained_model = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
-mod_hash = 'fbe63257a054c1c5466cfd7bf14646d6'
+# Disable verbose tensorflow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 depth = 16
 width = 8
 weight_file = "./models/yu4u_age-gender-estimation/weights.28-3.73.hdf5"
 margin = 0.4
-
-# for face detection
-detector = dlib.get_frontal_face_detector()
 
 # load model and weights
 img_size = 64
@@ -22,7 +19,6 @@ model.load_weights(weight_file)
 
 
 def start_classifier_images(path):
-    print("hello")
     image_dir = path
     frames = []
 
@@ -37,40 +33,36 @@ def start_classifier_images(path):
     return classify(frames)
 
 
-def start_classifier_stream(frame):
-    return classify(frame)
+def classify(frame, face):
+    # TODO: the model works on multiple faces for some weird reason, we should support that
 
-
-def classify(frame):
+    # set colors to rgb
     input_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # cv2.imshow("face0", input_frame)
+
+    # make image smaller and weird colors
     img_h, img_w, _ = np.shape(input_frame)
+    face_small_weird = np.empty((1, img_size, img_size, 3))
+    x1, y1, w, h = face
+    x2, y2 = x1+w, y1+h
+    xw1 = max(int(x1 - margin * w), 0)
+    yw1 = max(int(y1 - margin * h), 0)
+    xw2 = min(int(x2 + margin * w), img_w - 1)
+    yw2 = min(int(y2 + margin * h), img_h - 1)
+    face_small_weird[0, :, :, :] = cv2.resize(frame[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+    # cv2.imshow("face small weird", face_small_weird)
 
-    # detect faces using dlib detector
-    detected = detector(input_frame, 1)
-    faces = np.empty((len(detected), img_size, img_size, 3))
+    # predict age and gender
+    results = model.predict(face_small_weird)
 
-    label = [-1, 'U']
+    # age
+    ages = np.arange(0, 101).reshape(101, 1)
+    age = int(results[1].dot(ages).flatten()[0])
+    # print(np.sum(results[1][0]), np.max(results[1][0]))
+    # TODO: it should be possible to determine the certainity too, but need statistics
 
-    if len(detected) > 0:
-        for i, d in enumerate(detected):
-            x1, y1, x2, y2, w, h = d.left(), d.top(), d.right() + 1, d.bottom() + 1, d.width(), d.height()
-            xw1 = max(int(x1 - margin * w), 0)
-            yw1 = max(int(y1 - margin * h), 0)
-            xw2 = min(int(x2 + margin * w), img_w - 1)
-            yw2 = min(int(y2 + margin * h), img_h - 1)
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
-            # cv2.rectangle(img, (xw1, yw1), (xw2, yw2), (255, 0, 0), 2)
-            faces[i, :, :, :] = cv2.resize(frame[yw1:yw2 + 1, xw1:xw2 + 1, :], (img_size, img_size))
+    # gender
+    gender = 'M' if results[0][0][0] < .5 else 'F'
+    gender_certainty = np.amax(results[0][0])
 
-        # predict ages and genders of the detected faces
-        results = model.predict(faces)
-        predicted_genders = results[0]
-        ages = np.arange(0, 101).reshape(101, 1)
-        predicted_ages = results[1].dot(ages).flatten()
-
-        # draw results
-        for i, d in enumerate(detected):
-            label[0] = int(predicted_ages[i])
-            label[1] = "M" if predicted_genders[i][0] < 0.5 else "F"
-
-    return label
+    return age, gender, gender_certainty
