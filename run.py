@@ -1,14 +1,15 @@
 import argparse
 import importlib
+import time
 
 import cv2
-import time
 
 from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
 from classifier.classifier import classify
 from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
+from positioning.simple import get_position
 from recognition.identify import get_identifications
 
 # Reporting is loaded based on arguments, see main()
@@ -43,11 +44,15 @@ def every_frame(frame, timestamp):
 
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
+        # get the positioning of the person
+        position = get_position(face)
+
         # get the name of the current face
         name = people_in_frame[index]
 
         # get classification for this face
-        classification = classify(frame, face, timestamp, name)
+        classification = classify(frame, face, timestamp, name, position)
+        print(classification)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:

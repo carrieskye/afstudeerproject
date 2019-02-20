@@ -92,6 +92,7 @@
             console.log('socket message', evt.data);
             if (evt.data !== undefined) {
                 const classification = jQuery.parseJSON(evt.data);
+                console.log(classification);
                 if (classification.gender === 'M') gender_label = 'M';
                 else gender_label = 'F';
                 if (classification.age > 12) age_label = 'A';
@@ -120,7 +121,7 @@
             dots: false,
         }).on('beforeChange', function () {
             $('#slider').slick('slickAdd', `
-                <div><img src="/static/img/${age_label}_${gender_label}_${slides[slide % slides.length]}.png" alt=""/></div>
+                <div><img src="/static/img/${age_label.toLowerCase()}_${gender_label.toLowerCase()}_${slides[slide % slides.length]}.png" alt=""/></div>
             `);
             slide++;
         });

@@ -23,7 +23,7 @@ def load_faces_from_directory(directory):
 
 
 # load faces from ./people directory
-# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
 def get_identifications(frame, _faces, new_face_callback=None):
