@@ -1,5 +1,7 @@
 import argparse
 import importlib
+from functools import reduce
+
 import numpy as np
 from collections import Counter
 
@@ -41,21 +43,35 @@ def every_frame(frame):
 
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
-        classification = classify(frame, face)
         # get the name of the current face
-        name_of_person = people_in_frame[index]
+        name = people_in_frame[index]
+
+        # get classification for this face
+        classification = classify(frame, face)
+
         # if this is the first time initialise in the people dictionary
-        if name_of_person not in people:
-            people[name_of_person] = []
+        if name not in people:
+            people[name] = []
+
         # append this classification
-        people[name_of_person].append(classification)
-        # append the name
-        label = name_of_person
-        # get average age over all ages predications
-        label += " age:" + str(int(np.average(list(map(lambda c: c.age, people[name_of_person])))))
+        people[name].append(classification)
+
+        # get all classification of this person so far
+        classifications = people[name]
+
+        # get average age over all ages classifications
+        average_age = int(reduce(np.add, (c.age for c in classifications))/len(classifications))
+
         # get most common gender label
-        label += " " + Counter(list(map(lambda c: c.gender, people[name_of_person]))).most_common(1)[0][0]
+        most_common_gender = Counter(c.gender for c in classifications).most_common(1)[0][0]
+
+        # get last emotion
+        last_emotion = people[name][-1].emotion
+
+        label = f'{name} ({average_age}/{most_common_gender}/{last_emotion})'
         labels.append(label)
+
+    # TODO: determine when to send the labels with label_action
 
     # annotate the frame
     annotate_frame(frame, faces_css, labels)
