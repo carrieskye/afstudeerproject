@@ -23,13 +23,19 @@ def load_faces_from_directory(directory):
 
 
 # load faces from ./people directory
-load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
-def get_identifications(frame, faces, new_face_callback=None):
+def get_identifications(frame, _faces, new_face_callback=None):
     """Returns array with names of people"""
     # we get all encodings for the faces
-    face_encodings = face_recognition.face_encodings(frame, faces)
+    rgb_small_frame = frame[:, :, ::-1]
+
+    # opencv is x y w h
+    # dlib   is t r b l
+    faces = [(face[1], face[2], face[3], face[0]) for face in _faces]
+
+    face_encodings = face_recognition.face_encodings(rgb_small_frame, faces)
     # we create an array that has as many places as the faces we got
     names = [""] * len(faces)
 
