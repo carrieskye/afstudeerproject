@@ -1,6 +1,5 @@
 from os import listdir
-from os.path import isfile, join, realpath, dirname, splitext
-import numpy as  np
+from os.path import isfile, join, splitext
 import pickle
 
 import face_recognition
@@ -26,6 +25,7 @@ def load_faces_from_directory(directory):
         known_face_encodings.append(face_recognition.face_encodings(face_recognition.load_image_file(file_path))[0])
         known_face_names.append(name)
 
+
 def load_encodings_from_database():
     try:
         with open('./recognition/database/database.dat', 'rb') as f:
@@ -33,16 +33,14 @@ def load_encodings_from_database():
             for key, value in all_data.items():
                 known_face_names.append(key)
                 known_face_encodings.append(value)
-            print(all_data)
-            print(known_face_encodings)
     except EOFError:
         print("New database")
 
 
 # load faces from ./people directory
-#load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
-#load encodings from database file
+# load encodings from database file
 load_encodings_from_database()
 
 
@@ -93,12 +91,11 @@ def get_identifications(frame, _faces, new_face_callback=None):
 
     return names
 
+
 def persist():
     i = 1
     for item in known_face_encodings:
-        all_data[i] = known_face_encodings[i-1]
+        all_data[i] = known_face_encodings[i - 1]
         i += 1
     with open('./recognition/database/database.dat', 'wb') as f:
         pickle.dump(all_data, f)
-    print(all_data)
-
