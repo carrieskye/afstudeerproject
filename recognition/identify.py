@@ -1,5 +1,6 @@
 from os import listdir
 from os.path import isfile, join, realpath, dirname, splitext
+import numpy as  np
 
 import cv2
 import face_recognition
@@ -43,19 +44,16 @@ def get_identifications(frame, _faces, new_face_callback=None):
     # for every encoding of a face
     for index, encoding in enumerate(face_encodings):
         # search it in the known_faces
-        matches = face_recognition.compare_faces(known_face_encodings, encoding)
+        has = False
+        distances=face_recognition.face_distance(known_face_encodings, encoding)
 
-        distances=face_recognition.face_distance(known_face_encodings, encoding).tolist()
-
-        # if any of them match
-        if True in matches:
-            # take the first one
-            #first_match_index = distances.index(True)
-            best_match_index = distances.index(min(distances))
-            # get his name
-            name = known_face_names[best_match_index]
-
-            names[index] = name
+        for dist in distances:
+            if dist < 0.6:
+                best_match_index = np.argmin(distances)
+                name = known_face_names[best_match_index]
+                names[index] = name
+                has = True
+        if has:
             continue
 
         # if none are found we save this one too
