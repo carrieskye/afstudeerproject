@@ -30,8 +30,7 @@ load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 def get_identifications(frame, _faces, new_face_callback=None):
     """Returns array with names of people"""
     # we get all encodings for the faces
-    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-    rgb_small_frame = small_frame[:, :, ::-1]
+    rgb_small_frame = frame[:, :, ::-1]
 
     # opencv is x y w h
     # dlib   is t r b l
@@ -46,15 +45,15 @@ def get_identifications(frame, _faces, new_face_callback=None):
         # search it in the known_faces
         matches = face_recognition.compare_faces(known_face_encodings, encoding)
 
-        # print(distances=face_recognition.face_distance(known_face_encodings, encoding))
+        distances=face_recognition.face_distance(known_face_encodings, encoding).tolist()
 
         # if any of them match
-        # TODO: We are taking the first match here, would be better to take best match using face_distance
         if True in matches:
             # take the first one
-            first_match_index = matches.index(True)
+            #first_match_index = distances.index(True)
+            best_match_index = distances.index(min(distances))
             # get his name
-            name = known_face_names[first_match_index]
+            name = known_face_names[best_match_index]
 
             names[index] = name
             continue
