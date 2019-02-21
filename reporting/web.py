@@ -13,16 +13,19 @@ app = Flask(__name__, static_url_path='')
 current_frame = None
 changed = False
 
-last_labels = Classification(time.time(), 'unknown', 'unknown', 'unknown', -1)
+last_labels = Classification(time.time(), (-1, -1), 'unknown', 'unknown', 'unknown', -1)
 
 
-def show_detected(labels):
+def show_detected(labels, was_activated):
     global last_labels
 
     last_labels = labels
 
+    def obj_dict(obj):
+        return obj.__dict__
+
     for connection in connections:
-        connection.send_message(json.dumps(labels.__dict__))
+        connection.send_message(json.dumps([labels, was_activated], default=obj_dict))
 
 
 def show_frame(frame):

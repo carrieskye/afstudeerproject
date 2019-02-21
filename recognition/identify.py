@@ -3,8 +3,8 @@ from os.path import isfile, join, realpath, dirname, splitext
 import numpy as  np
 import pickle
 
-import cv2
 import face_recognition
+import numpy as np
 
 all_data = {}
 
@@ -63,8 +63,7 @@ def get_identifications(frame, _faces, new_face_callback=None):
     for index, encoding in enumerate(face_encodings):
         # search it in the known_faces
         has = False
-        distances=face_recognition.face_distance(known_face_encodings, encoding)
-        print(distances)
+        distances = face_recognition.face_distance(known_face_encodings, encoding)
 
         for dist in distances:
             if dist < 0.6:
