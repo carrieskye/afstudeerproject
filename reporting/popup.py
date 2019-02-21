@@ -9,6 +9,6 @@ def show_frame(frame):
         raise SystemExit
 
 
-def show_detected(label):
+def show_detected(labels, was_activated):
     """Print the label"""
-    print("label detected" + str(label))
+    print("label detected" + str(labels) + " was activate:" + str(was_activated))
