@@ -72,13 +72,12 @@
 <script src="/static/jquery/jquery-migrate-1.2.1.min.js"></script>
 <script src="/static/slick/slick.min.js"></script>
 <script type="text/javascript">
-    var is_remote_page_idle = false;
+    let is_remote_page_idle = false;
+    let was_activated = false;
 
     function labels_to_type(gender_label, age_label) {
-        if (gender_label === 'M' && age_label === 'A') return 'heren';
-        if (gender_label === 'F' && age_label === 'A') return 'dames';
-        if (gender_label === 'M' && age_label === 'C') return 'jongens';
-        if (gender_label === 'F' && age_label === 'C') return 'meisjes';
+        if (gender_label === 'M') return age_label === 'A' ? 'heren' : 'jongens';
+        else return age_label === 'A' ? 'dames' : 'meisjes';
     }
 
     $(document).ready(function () {
@@ -89,25 +88,32 @@
         let age_label = 'C';
 
         ws.onmessage = function (evt) {
-            console.log('socket message', evt.data);
-            if (evt.data !== undefined) {
-                const classification = jQuery.parseJSON(evt.data);
-                console.log(classification);
-                if (classification.gender === 'M') gender_label = 'M';
-                else gender_label = 'F';
-                if (classification.age > 12) age_label = 'A';
-                else age_label = 'C';
-                if (evt.data == 'idle') is_remote_page_idle = true;
-                if (evt.data == 'active') is_remote_page_idle = false;
-                $('#debug').text(JSON.stringify(classification));
+            if (evt.data === undefined) return;
+
+            if (evt.data === 'idle' || evt.data === 'active') {
+                is_remote_page_idle = (evt.data === 'idle');
+                return
             }
 
-            try {
-                $('#iframe')[0].contentWindow.location.href;
-                $('#iframe')[0].contentWindow.postMessage(labels_to_type(gender_label, age_label), '*');
-            } catch (e) {
-                console.log('CANNOT COMMUNICATE WITH IFRAME', e);
-                if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(gender_label, age_label));
+            const classification = jQuery.parseJSON(evt.data)[0];
+            was_activated = jQuery.parseJSON(evt.data)[1];
+            console.log(was_activated);
+
+            gender_label = (classification.gender === 'M') ? 'M' : 'F';
+            age_label = (classification.age > 12) ? 'A' : 'C';
+
+
+            $('#debug').text(JSON.stringify(classification));
+
+
+            if (!was_activated) {
+                try {
+                    $('#iframe')[0].contentWindow.location.href;
+                    $('#iframe')[0].contentWindow.postMessage(labels_to_type(gender_label, age_label), '*');
+                } catch (e) {
+                    console.log('CANNOT COMMUNICATE WITH IFRAME', e);
+                    if (is_remote_page_idle) $('iframe').attr('src', '/static/webshop-torfs.html?type=' + labels_to_type(gender_label, age_label));
+                }
             }
         };
 

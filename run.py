@@ -11,6 +11,7 @@ from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from positioning.simple import get_position
 from recognition.identify import get_identifications
+from activation.simple import is_activated
 
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDEs cannot work with this
@@ -22,6 +23,9 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 # dictionary with person -> classifications
 people = {}
 
+# keep track of activation, so the home page only changes if no one was before the camera in the previous frame
+was_activated = False
+
 
 def opencv_format_to_css(opencv_format):
     # css format is: top, right, bottom, left and used by face_recognition
@@ -30,6 +34,8 @@ def opencv_format_to_css(opencv_format):
 
 
 def every_frame(frame, timestamp):
+    global was_activated
+
     # get faces from detector
     faces = detect_face(frame, cascadePath)
 
@@ -52,7 +58,7 @@ def every_frame(frame, timestamp):
 
         # get classification for this face
         classification = classify(frame, face, timestamp, name, position)
-        print(classification)
+        # print(classification)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:
@@ -67,6 +73,11 @@ def every_frame(frame, timestamp):
         labels.append(overall_classification)
 
     # TODO: determine when to send the labels with label_action
+    activated = is_activated(timestamp, people_in_frame)
+    if activated and len(labels) > 0:
+        # TODO: determine whose labels to send to the frontend
+        label_action(labels[0])
+    was_activated = activated
 
     # annotate the frame
     annotate_frame(frame, faces_css, labels)
@@ -76,7 +87,7 @@ def every_frame(frame, timestamp):
 
 
 def label_action(labels):
-    reporting.show_detected(labels)
+    reporting.show_detected(labels, was_activated)
 
 
 def main():
