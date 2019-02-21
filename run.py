@@ -11,7 +11,7 @@ from classifier.classifier import classify
 from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from positioning.simple import get_position
-from recognition.identify import get_identifications
+from recognition.identify import get_identifications, persist
 from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
@@ -92,6 +92,7 @@ def label_action(labels):
 
 def sigint_handler(signum, frame):
     timeblock_stats()
+    persist()
     raise SystemExit
 
 
