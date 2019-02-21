@@ -116,6 +116,22 @@ def main():
     print("Loading " + reporting_module)
     reporting = importlib.import_module(reporting_module)
 
+    # if process is killed with ctrl+c display stats
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    if args.video is not None:
+        cap = cv2.VideoCapture(args.video)
+        frame_nr = 0
+        while cap.isOpened():
+            ret, frame = cap.read()
+            frame = cv2.resize(frame, None, fx=0.25, fy=0.25)
+            if frame_nr % 4 == 0:
+                every_frame(frame, time.time())
+            frame_nr += 1
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                raise SystemExit
+        return
+
     if args.file is not None:
         frame = cv2.imread(args.file)
         every_frame(frame, time.time())
@@ -125,8 +141,6 @@ def main():
 
     if args.print_classification:
         print_classification = True
-
-    signal.signal(signal.SIGINT, sigint_handler)
 
     # on every frame from the stream run stuff
     stream_video(every_frame)
@@ -139,6 +153,8 @@ def get_args():
                         help="Serve web-page instead of showing pop-up")
     parser.add_argument("--file", type=str, default=None,
                         help="Run on image instead of webcam")
+    parser.add_argument("--video", type=str, default=None,
+                        help="Run on video instead of webcam")
     parser.add_argument("--print_classification", type=bool, default=False,
                         help="Print classification as we get them")
     args = parser.parse_args()
