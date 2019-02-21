@@ -1,8 +1,8 @@
 from os import listdir
 from os.path import isfile, join, realpath, dirname, splitext
 
-import cv2
 import face_recognition
+import numpy as np
 
 # here we store 128 point encodings
 known_face_encodings = []
@@ -30,7 +30,6 @@ load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 def get_identifications(frame, _faces, new_face_callback=None):
     """Returns array with names of people"""
     # we get all encodings for the faces
-    # small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
     rgb_small_frame = frame[:, :, ::-1]
 
     # opencv is x y w h
@@ -44,19 +43,16 @@ def get_identifications(frame, _faces, new_face_callback=None):
     # for every encoding of a face
     for index, encoding in enumerate(face_encodings):
         # search it in the known_faces
-        matches = face_recognition.compare_faces(known_face_encodings, encoding)
+        has = False
+        distances = face_recognition.face_distance(known_face_encodings, encoding)
 
-        # print(distances=face_recognition.face_distance(known_face_encodings, encoding))
-
-        # if any of them match
-        # TODO: We are taking the first match here, would be better to take best match using face_distance
-        if True in matches:
-            # take the first one
-            first_match_index = matches.index(True)
-            # get his name
-            name = known_face_names[first_match_index]
-
-            names[index] = name
+        for dist in distances:
+            if dist < 0.6:
+                best_match_index = np.argmin(distances)
+                name = known_face_names[best_match_index]
+                names[index] = name
+                has = True
+        if has:
             continue
 
         # if none are found we save this one too

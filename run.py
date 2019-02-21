@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import signal
 import time
 
 import cv2
@@ -11,7 +12,9 @@ from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from positioning.simple import get_position
 from recognition.identify import get_identifications
+
 from activation.simple import is_activated
+from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDEs cannot work with this
@@ -26,6 +29,9 @@ people = {}
 # keep track of activation, so the home page only changes if no one was before the camera in the previous frame
 was_activated = False
 
+# Print classifications as we get them
+print_classification = False
+
 
 def opencv_format_to_css(opencv_format):
     # css format is: top, right, bottom, left and used by face_recognition
@@ -37,13 +43,15 @@ def every_frame(frame, timestamp):
     global was_activated
 
     # get faces from detector
-    faces = detect_face(frame, cascadePath)
+    with TimeBlock('detection'):
+        faces = detect_face(frame, cascadePath)
 
     # convert opencv coordinates to css format
     faces_css = [opencv_format_to_css(face) for face in faces]
 
-    # get identifications for the faces
-    people_in_frame = get_identifications(frame, faces_css)
+    with TimeBlock('identification'):
+        # get identifications for the faces
+        people_in_frame = get_identifications(frame, faces_css)
 
     # labels for each person in the frame
     labels = []
@@ -51,14 +59,17 @@ def every_frame(frame, timestamp):
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
         # get the positioning of the person
-        position = get_position(face)
+        position = get_position(frame, face)
 
         # get the name of the current face
         name = people_in_frame[index]
 
         # get classification for this face
         classification = classify(frame, face, timestamp, name, position)
-        # print(classification)
+
+        # if we want to debug we can print the classification
+        if print_classification:
+            print(classification)
 
         # if this is the first time initialise in the people dictionary
         if name not in people:
@@ -68,7 +79,8 @@ def every_frame(frame, timestamp):
         people[name].append(classification)
 
         # get average age, most common gender and last emotion
-        overall_classification = get_overall_classification(people[name])
+        with TimeBlock('overall'):
+            overall_classification = get_overall_classification(people[name])
 
         labels.append(overall_classification)
 
@@ -90,8 +102,13 @@ def label_action(labels):
     reporting.show_detected(labels, was_activated)
 
 
+def sigint_handler(signum, frame):
+    timeblock_stats()
+    raise SystemExit
+
+
 def main():
-    global reporting
+    global reporting, print_classification
     args = get_args()
     # load either web or pop-up reporting based on args
     reporting_module = 'reporting.' + ('web' if args.web else 'popup')
@@ -105,6 +122,11 @@ def main():
             raise SystemExit
         return
 
+    if args.print_classification:
+        print_classification = True
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     # on every frame from the stream run stuff
     stream_video(every_frame)
 
@@ -116,6 +138,8 @@ def get_args():
                         help="Serve web-page instead of showing pop-up")
     parser.add_argument("--file", type=str, default=None,
                         help="Run on image instead of webcam")
+    parser.add_argument("--print_classification", type=bool, default=False,
+                        help="Print classification as we get them")
     args = parser.parse_args()
     return args
 
