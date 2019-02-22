@@ -9,7 +9,10 @@ def get_overall_classification(classifications):
     # if we want to use average instead:
     # average_age = int(reduce(np.add, (c.age for c in classifications)) / len(classifications))
     # get median age over all ages classifications
-    median_age = int(np.median(list(c.age for c in classifications if c.age is not None)))
+    try:
+        median_age = int(np.median(list(c.age for c in classifications if c.age is not None)))
+    except ValueError:
+        median_age = -1
 
     # get most common gender label
     most_common_gender = Counter(c.gender for c in classifications).most_common(1)[0][0]
