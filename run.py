@@ -14,7 +14,6 @@ from detectors.simple import detect_face
 from person_selector.simple import select_person
 from positioning.simple import get_position
 from recognition.identify import get_identifications, persist
-from reporting.web import show_detected
 from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
@@ -83,7 +82,7 @@ def every_frame(frame, timestamp):
     if activated and len(labels) > 0:
         # TODO: determine whose labels to send to the frontend
         selected_labels = select_person(last_classifications)
-        show_detected(selected_labels, was_activated)
+        reporting.show_detected(selected_labels, was_activated)
     was_activated = activated
 
     # annotate the frame
