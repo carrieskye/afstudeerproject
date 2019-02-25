@@ -82,8 +82,8 @@ def every_frame(frame, timestamp):
     activated = is_activated(timestamp, people_in_frame)
     if activated and len(labels) > 0:
         # TODO: determine whose labels to send to the frontend
-        selected = select_person(last_classifications)
-        label_action(selected)
+        selected_labels = select_person(last_classifications)
+        show_detected(selected_labels, was_activated)
     was_activated = activated
 
     # annotate the frame
@@ -93,11 +93,7 @@ def every_frame(frame, timestamp):
     reporting.show_frame(frame)
 
 
-def label_action(labels):
-    show_detected(labels, was_activated)
-
-
-def sigint_handler(signum, frame):
+def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
     timeblock_stats()
     persist()
     raise SystemExit
