@@ -8,7 +8,7 @@ import cv2
 from activation.simple import is_activated
 from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
-from classifier.classifier import classify
+from classifier.classifier import Classifier
 from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
 from person_selector.simple import select_person
@@ -19,6 +19,8 @@ from utils import TimeBlock, timeblock_stats
 # Reporting is loaded based on arguments, see main()
 # TODO: this is not ideal since IDEs cannot work with this
 reporting = None
+
+classifier = None
 
 # cascade to use with opencv to identify faces
 cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
@@ -57,7 +59,7 @@ def every_frame(frame, timestamp):
         name = people_in_frame[index]
 
         # get classification for this face
-        classification = classify(frame, face, timestamp, name, position)
+        classification = classifier.classify(frame, face, timestamp, name, position)
 
         # if we want to debug we can print the classification
         if print_classification:
@@ -97,12 +99,14 @@ def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
 
 
 def main():
-    global reporting, print_classification
+    global reporting, print_classification, classifier
     args = get_args()
     # load either web or pop-up reporting based on args
     reporting_module = 'reporting.' + ('web' if args.web else 'popup')
     print("Loading " + reporting_module)
     reporting = importlib.import_module(reporting_module)
+
+    classifier = Classifier(args.age_gender)
 
     # if process is killed with ctrl+c display stats
     signal.signal(signal.SIGINT, sigint_handler)
@@ -141,6 +145,8 @@ def get_args():
                         help="Serve web-page instead of showing pop-up")
     parser.add_argument("--file", type=str, default=None,
                         help="Run on image instead of webcam")
+    parser.add_argument("--age_gender", type=str, default='yu4u_age_gender.age_gender',
+                        help="Classifier to use for age and gender, options are: yu4u_age_gender.age_gender or insightface_gender_age.classify")
     parser.add_argument("--video", type=str, default=None,
                         help="Run on video instead of webcam")
     parser.add_argument("--print_classification", type=bool, default=False,
