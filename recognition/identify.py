@@ -1,5 +1,5 @@
 from os import listdir
-from os.path import isfile, join, splitext
+from os.path import isfile, join, splitext, dirname, realpath
 import pickle
 
 import face_recognition
@@ -38,10 +38,10 @@ def load_encodings_from_database():
 
 
 # load faces from ./people directory
-# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 # load encodings from database file
-load_encodings_from_database()
+# load_encodings_from_database()
 
 
 def get_identifications(frame, _faces, new_face_callback=None):

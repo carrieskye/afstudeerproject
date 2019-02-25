@@ -84,6 +84,7 @@ def every_frame(frame, timestamp):
         with TimeBlock('overall'):
             overall_classification = get_overall_classification(people[name])
 
+        # TODO: no, 1 is enough you know, so remove one
         last_classifications.append(classification)
         labels.append(overall_classification)
 
