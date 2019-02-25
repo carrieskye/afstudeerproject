@@ -1,6 +1,6 @@
-from classifier.age_gender import classify as classify_age_gender
+from classifier.yu4u_age_gender.age_gender import classify as classify_age_gender
 from classifier.insightface_gender_age.classify import classify as classify_insightface
-from classifier.emotion import classify as classify_emotion
+from classifier.emotion.emotion import classify as classify_emotion
 from utils import TimeBlock
 from .classification import Classification
 

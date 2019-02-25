@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from classifier.wide_resnet import WideResNet
+from classifier.yu4u_age_gender.wide_resnet import WideResNet
 
 # Disable verbose tensorflow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
