@@ -6,7 +6,7 @@ from classifier.insightface_gender_age.common import face_preprocess
 import numpy as np
 
 image_size = (112, 112)
-prefix = 'classifier/insightface_gender_age/model/model'
+prefix = 'models/insightface_gender_age/model/model'
 epoch = 0
 gpu = -1
 # mtcnn option, 1 means using R+O, 0 means detect from beginning
@@ -24,7 +24,7 @@ model = mx.mod.Module(symbol=sym, context=ctx, label_names=None)
 model.bind(data_shapes=[('data', (1, 3, image_size[0], image_size[1]))])
 model.set_params(arg_params, aux_params)
 
-mtcnn_path = os.path.join(os.path.dirname(__file__), 'mtcnn-model')
+mtcnn_path = './models/insightface_gender_age/mtcnn-model'
 detector = MtcnnDetector(model_folder=mtcnn_path,
                          ctx=ctx, num_worker=1, accurate_landmark=True,
                          threshold=det_threshold)
