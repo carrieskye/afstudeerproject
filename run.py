@@ -5,15 +5,16 @@ import time
 
 import cv2
 
+from activation.simple import is_activated
 from annotate.simple import annotate_frame
 from cameras.laptop_cam import stream_video
 from classifier.classifier import classify
 from data_treatment.post_processor import get_overall_classification
 from detectors.simple import detect_face
+from person_selector.simple import select_person
 from positioning.simple import get_position
 from recognition.identify import get_identifications, persist
-
-from activation.simple import is_activated
+from reporting.web import show_detected
 from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
@@ -46,6 +47,7 @@ def every_frame(frame, timestamp):
 
     # labels for each person in the frame
     labels = []
+    last_classifications = []
 
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
@@ -73,13 +75,15 @@ def every_frame(frame, timestamp):
         with TimeBlock('overall'):
             overall_classification = get_overall_classification(people[name])
 
+        last_classifications.append(classification)
         labels.append(overall_classification)
 
     # TODO: determine when to send the labels with label_action
     activated = is_activated(timestamp, people_in_frame)
     if activated and len(labels) > 0:
         # TODO: determine whose labels to send to the frontend
-        label_action(labels[0])
+        selected = select_person(last_classifications)
+        label_action(selected)
     was_activated = activated
 
     # annotate the frame
@@ -90,7 +94,7 @@ def every_frame(frame, timestamp):
 
 
 def label_action(labels):
-    reporting.show_detected(labels, was_activated)
+    show_detected(labels, was_activated)
 
 
 def sigint_handler(signum, frame):
