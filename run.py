@@ -33,12 +33,6 @@ was_activated = False
 print_classification = False
 
 
-def opencv_format_to_css(opencv_format):
-    # css format is: top, right, bottom, left and used by face_recognition
-    (x, y, w, h) = opencv_format
-    return x, y, x + w, y + h
-
-
 def every_frame(frame, timestamp):
     global was_activated
 
@@ -46,12 +40,9 @@ def every_frame(frame, timestamp):
     with TimeBlock('detection'):
         faces = detect_face(frame, cascadePath)
 
-    # convert opencv coordinates to css format
-    faces_css = [opencv_format_to_css(face) for face in faces]
-
     with TimeBlock('identification'):
         # get identifications for the faces
-        people_in_frame = get_identifications(frame, faces_css)
+        people_in_frame = get_identifications(frame, faces)
 
     # labels for each person in the frame
     labels = []
@@ -92,7 +83,7 @@ def every_frame(frame, timestamp):
     was_activated = activated
 
     # annotate the frame
-    annotate_frame(frame, faces_css, labels)
+    annotate_frame(frame, faces, labels)
 
     # show the person we detected
     reporting.show_frame(frame)
