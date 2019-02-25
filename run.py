@@ -77,10 +77,8 @@ def every_frame(frame, timestamp):
         last_classifications.append(classification)
         labels.append(overall_classification)
 
-    # TODO: determine when to send the labels with label_action
     activated = is_activated(timestamp, people_in_frame)
     if activated and len(labels) > 0:
-        # TODO: determine whose labels to send to the frontend
         selected_labels = select_person(last_classifications)
         reporting.show_detected(selected_labels, was_activated)
     was_activated = activated
