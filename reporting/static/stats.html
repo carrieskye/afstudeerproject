@@ -1,0 +1,98 @@
+<html>
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+	<script src="https://github.com/nagix/chartjs-plugin-streaming/releases/download/v1.7.1/chartjs-plugin-streaming.min.js"></script>
+</head>
+<body>
+	<div>
+		<canvas id="myChart"></canvas>
+	</div>
+    <script>
+        var chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+
+
+
+        var color = Chart.helpers.color;
+        var config = {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Female',
+                    backgroundColor: color(chartColors.red).alpha(0.5).rgbString(),
+                    borderColor: chartColors.red,
+                    data: []
+                }, {
+                    label: 'Male',
+                    backgroundColor: color(chartColors.blue).alpha(0.5).rgbString(),
+                    borderColor: chartColors.blue,
+                    data: []
+                }]
+            },
+            options: {
+                title: { display: true, text: 'Detected people' },
+                scales: {
+                    xAxes: [{
+                        type: 'realtime',
+                        realtime: {
+                            duration: 60 * 1000,
+                            refresh: 1 * 1000,
+                            delay: 2 * 1000,
+                            /*
+                            onRefresh: function (chart) {
+                                chart.config.data.datasets.forEach(function(dataset) {
+                                    dataset.data.push({
+                                        x: Date.now(),
+                                        y: 50,
+                                        r: 10
+                                    });
+                                });
+                            }
+                            */
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: { display: true, labelString: 'Predicted age' },
+                        ticks: { suggestedMin: 10, suggestedMax: 70 },
+                    }]
+                },
+                tooltips: { mode: 'nearest', intersect: false },
+                hover: { mode: 'nearest', intersect: false }
+            }
+        };
+
+        window.onload = function() {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            window.myChart = new Chart(ctx, config);
+
+            const ws = new WebSocket("ws://localhost:5001/");
+            ws.onmessage = function (evt) {
+                if (evt.data === undefined) return;
+
+                if (evt.data === 'idle' || evt.data === 'active') {
+                    return
+                }
+
+                const classification = JSON.parse(evt.data)[0];
+                window.myChart.data.datasets[classification.gender == 'M' ? 1 : 0].data.push({
+                    x: Date.now(),
+                    y: classification.age,
+                    r: classification.position.surface
+                });
+                console.log(classification)
+            };
+
+        };
+        var colorNames = Object.keys(chartColors);
+
+    </script>
+</body>
+</html>

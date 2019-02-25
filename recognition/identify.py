@@ -40,6 +40,7 @@ def load_encodings_from_database():
 # load faces from ./people directory
 load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
+
 # load encodings from database file
 # load_encodings_from_database()
 
@@ -51,7 +52,7 @@ def get_identifications(frame, _faces, new_face_callback=None):
 
     # opencv is x y w h
     # dlib   is t r b l
-    faces = [(face[1], face[2], face[3], face[0]) for face in _faces]
+    faces = [(y, x + w, y + h, x) for (x, y, w, h) in _faces]
 
     face_encodings = face_recognition.face_encodings(rgb_small_frame, faces)
     # we create an array that has as many places as the faces we got
