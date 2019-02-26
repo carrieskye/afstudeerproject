@@ -1,8 +1,3 @@
-import operator
-import itertools
-import numpy as np
-
-
 def select_person(classifications):
     categories = {'girl': [], 'boy': [], 'woman': [], 'man': []}
 

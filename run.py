@@ -17,9 +17,9 @@ from recognition.identify import get_identifications, persist
 from utils import TimeBlock, timeblock_stats
 
 # Reporting is loaded based on arguments, see main()
-# TODO: this is not ideal since IDEs cannot work with this
 reporting = None
 
+# Classifier loaded in main
 classifier = None
 
 # cascade to use with opencv to identify faces

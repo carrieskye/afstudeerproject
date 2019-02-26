@@ -32,9 +32,6 @@ def show_frame(frame):
     global current_frame
     global changed
     current_frame = frame
-
-    # cv2.putText(frame, str(last_labels), (15, 120), 2, 1, (0, 0, 0))
-
     changed = True
 
 

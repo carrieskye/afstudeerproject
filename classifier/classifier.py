@@ -6,6 +6,7 @@ from importlib import import_module
 
 class Classifier:
     """Load classifiers"""
+
     def __init__(self, age_gender_classifier):
         module = 'classifier.' + age_gender_classifier
         print("Loading " + module)

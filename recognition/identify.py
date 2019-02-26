@@ -90,7 +90,6 @@ def persist(path=database_path):
 # load faces from ./people directory
 load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
-
 # load faces from ./people directory
 load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 

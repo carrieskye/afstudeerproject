@@ -15,7 +15,7 @@ def annotate_frame(original_frame, faces, labels, copy=False):
     frame = numpy.copy(original_frame) if copy else original_frame
 
     for index, (x, y, w, h) in enumerate(faces):
-        xw, yh = x+w, y+h
+        xw, yh = x + w, y + h
         label = f'{labels[index].name} ({labels[index].age} {labels[index].gender} {labels[index].emotion})'
         colour = get_colour(labels[index])
 
