@@ -34,9 +34,12 @@ was_activated = False
 # Print classifications as we get them
 print_classification = False
 
+# keep recent classifications to use for person selector
+recent_classifications = {}
+
 
 def every_frame(frame, timestamp):
-    global was_activated
+    global was_activated, recent_classifications
 
     # get faces from detector
     with TimeBlock('detection'):
@@ -48,7 +51,6 @@ def every_frame(frame, timestamp):
 
     # labels for each person in the frame
     labels = []
-    last_classifications = []
 
     # here we want the iterate over the identified persons and classify them
     for index, face in enumerate(faces):
@@ -76,12 +78,21 @@ def every_frame(frame, timestamp):
         with TimeBlock('overall'):
             overall_classification = get_overall_classification(people[name])
 
-        last_classifications.append(classification)
         labels.append(overall_classification)
 
+    # add new classifications to recent classifications
+    for classification in labels:
+        recent_classifications[classification] = 5
+
+    # lower time to live by one and remove expired classifications
+    for key, value in recent_classifications.items():
+        recent_classifications[key] = value - 1
+    recent_classifications = {k: v for k, v in recent_classifications.items() if v > 0}
+
+    # if activated, we determine the most important person and send advertisements for this person
     activated = is_activated(timestamp, people_in_frame)
     if activated and len(labels) > 0:
-        selected_labels = select_person(last_classifications)
+        selected_labels = select_person(recent_classifications.keys())
         reporting.show_detected(selected_labels, was_activated)
     was_activated = activated
 

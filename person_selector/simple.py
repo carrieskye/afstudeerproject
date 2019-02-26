@@ -1,4 +1,6 @@
 import operator
+import itertools
+import numpy as np
 
 
 def select_person(classifications):
@@ -14,7 +16,12 @@ def select_person(classifications):
     if len(relevant_categories) == 1:
         return list(relevant_categories.values())[0][0]
 
-    biggest_classifications = get_biggest_person(relevant_categories)
+    # TODO: better way to get list of all classifications?
+    relevant_classifications = []
+    for key, value in relevant_categories.items():
+        relevant_classifications += value
+
+    biggest_classifications = get_biggest_people(relevant_classifications)
     return get_most_central_person(biggest_classifications)
 
 
@@ -25,33 +32,22 @@ def map_to_category(gender, age):
         return 'woman' if age > 12 else 'girl'
 
 
-# TODO: rewrite this ugly speed solution
-def get_biggest_person(relevant_categories):
-    max_surface = 0
-    for key, value in relevant_categories.items():
-        for classification in value:
-            if classification.position.surface > max_surface:
-                max_surface = classification.position.surface
+def get_biggest_people(classifications):
+    max_surface = max(map(lambda value: value.position.surface, classifications))
+    min_surface = max_surface * 0.5
 
-    min_surface = max_surface * 0.8
-
-    biggest_classifications = []
-    for key, value in relevant_categories.items():
-        for classification in value:
-            if classification.position.surface >= min_surface:
-                biggest_classifications.append(classification)
-
-    return biggest_classifications
+    return list(filter(lambda value: value.position.surface >= min_surface, classifications))
 
 
 # TODO: rewrite this ugly speed solution
-def get_most_central_person(biggest_classifications):
-    smallest_distance = biggest_classifications[0].position.distance
-    most_central_person = biggest_classifications[0]
+def get_most_central_person(classifications):
+    # index_min = np.argmin(c.position.distance for c in classifications)
+    smallest_distance = min(map(lambda value: value.position.distance, classifications))
 
-    for classification in biggest_classifications:
+    most_central_person = classifications[0]
+
+    for classification in classifications:
         if classification.position.distance < smallest_distance:
-            smallest_distance = classification.position.distance
             most_central_person = classification
 
     return most_central_person

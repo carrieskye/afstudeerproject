@@ -36,9 +36,9 @@ def load_faces_from_directory(directory):
 
         # load the first found encoding
         encoding = face_recognition.face_encodings(face_recognition.load_image_file(file_path))[0]
-        if encoding in known_face_encodings:
-            print(f'Encoding for {name} is already in the list')
-            continue
+        # if encoding in known_face_encodings:
+        #     print(f'Encoding for {name} is already in the list')
+        #     continue
         # append to encodings and names
         known_face_encodings.append(encoding)
         known_face_names.append(name)
@@ -73,8 +73,9 @@ def persist(path=database_path):
     print(f'Saved {len(all_data)} encodings to {path}')
 
 
-# load encodings from database file
-load_encodings_from_database()
+# load faces from ./people directory
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+
 
 # load faces from ./people directory
 load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
