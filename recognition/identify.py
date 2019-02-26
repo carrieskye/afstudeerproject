@@ -27,21 +27,35 @@ def load_faces_from_directory(directory):
         # split of name
         name, ext = splitext(file)
 
-        # check if this face is not already present in encodings
-        if name in known_face_names:
-            print(f'Encoding for {name} already exists')
-            continue
         # full name path
         file_path = join(directory, file)
 
         # load the first found encoding
         encoding = face_recognition.face_encodings(face_recognition.load_image_file(file_path))[0]
-        # if encoding in known_face_encodings:
-        #     print(f'Encoding for {name} is already in the list')
-        #     continue
-        # append to encodings and names
-        known_face_encodings.append(encoding)
-        known_face_names.append(name)
+
+        add_encoding(name, encoding)
+
+
+def add_encoding(name, encoding, check_for_existing=True):
+    """Add encoding and matching name to current known encodings"""
+    # check if this face is not already present in encodings
+    if name in known_face_names:
+        print(f'Encoding for {name} already exists')
+        return False
+
+    # check if there are encodings that already match
+    if check_for_existing and len(known_face_encodings) > 0:
+        distances = face_recognition.face_distance(known_face_encodings, encoding)
+        closest_match_index = np.argmin(distances)
+        if distances[closest_match_index] < max_face_distance:
+            print(f'Encoding for {name} already matches {known_face_names[closest_match_index]}')
+            return False
+
+    # add encoding and name to encodings
+    known_face_encodings.append(encoding)
+    known_face_names.append(name)
+
+    return True
 
 
 def load_encodings_from_database(path=database_path):
@@ -81,7 +95,7 @@ load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
-def get_identifications(frame, _faces, new_face_callback=None):
+def get_identifications(frame, _faces):
     """Returns array with names of people"""
     # we get all encodings for the faces
     rgb_small_frame = frame[:, :, ::-1]
@@ -90,40 +104,30 @@ def get_identifications(frame, _faces, new_face_callback=None):
     # dlib   is t r b l
     faces = [(y, x + w, y + h, x) for (x, y, w, h) in _faces]
 
-    face_encodings = face_recognition.face_encodings(rgb_small_frame, faces)
     # we create an array that has as many places as the faces we got
     names = [""] * len(faces)
+
+    # for every face create an encoding
+    face_encodings = face_recognition.face_encodings(rgb_small_frame, faces)
 
     # for every encoding of a face
     for index, encoding in enumerate(face_encodings):
         # search it in the known_faces
-        has = False
         distances = face_recognition.face_distance(known_face_encodings, encoding)
 
-        for dist in distances:
-            if dist < max_face_distance:
-                best_match_index = np.argmin(distances)
+        # check if this face is known
+        if len(distances) > 0:
+            best_match_index = np.argmin(distances)
+            distance = distances[best_match_index]
+            if distance < max_face_distance:
+                # we found a match
                 name = known_face_names[best_match_index]
                 names[index] = name
-                has = True
-        if has:
-            continue
+                continue
 
         # if none are found we save this one too
-        known_face_encodings.append(encoding)
-        # and name him the current length of faces
-        name = str(len(known_face_encodings))
-        known_face_names.append(name)
-
+        name = len(known_face_names)
+        add_encoding(name, encoding, check_for_existing=False)
         names[index] = name
-
-        # we can also notify anyone that there's a new guy
-        if new_face_callback is not None:
-            # we found a new face in:
-            # - frame,
-            # - at these coordinates,
-            # - with this encoding and
-            # - we call him name
-            new_face_callback(frame, faces[index], encoding, name)
 
     return names
