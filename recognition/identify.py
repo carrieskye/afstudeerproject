@@ -1,11 +1,9 @@
 from os import listdir
-from os.path import isfile, join, splitext
+from os.path import isfile, join, splitext, dirname, realpath
 import pickle
 
 import face_recognition
 import numpy as np
-
-all_data = {}
 
 # here we store 128 point encodings
 known_face_encodings = []
@@ -13,35 +11,73 @@ known_face_encodings = []
 # here we store the matching names
 known_face_names = []
 
+# path for database to store face_encodings
+database_path = './recognition/database/database.dat'
+
+# max distance when comparing faces
+max_face_distance = 0.6
+
 
 def load_faces_from_directory(directory):
     """Loads people from supplied directory as known people based on filename"""
     # get all files (not directories)
     files = [f for f in listdir(directory) if isfile(join(directory, f))]
+    # for every file
     for file in files:
+        # split of name
         name, ext = splitext(file)
+
+        # check if this face is not already present in encodings
+        if name in known_face_names:
+            print(f'Encoding for {name} already exists')
+            continue
+        # full name path
         file_path = join(directory, file)
-        # load the first found encoding in encodings
-        known_face_encodings.append(face_recognition.face_encodings(face_recognition.load_image_file(file_path))[0])
+
+        # load the first found encoding
+        encoding = face_recognition.face_encodings(face_recognition.load_image_file(file_path))[0]
+        if encoding in known_face_encodings:
+            print(f'Encoding for {name} is already in the list')
+            continue
+        # append to encodings and names
+        known_face_encodings.append(encoding)
         known_face_names.append(name)
 
 
-def load_encodings_from_database():
+def load_encodings_from_database(path=database_path):
+    """Load encodings from pickle file"""
     try:
-        with open('./recognition/database/database.dat', 'rb') as f:
-            all_data = pickle.load(f)
-            for key, value in all_data.items():
+        with open(path, 'rb') as f:
+            for key, value in pickle.load(f).items():
                 known_face_names.append(key)
                 known_face_encodings.append(value)
+            print(f'Loaded {len(known_face_names)} encodings from {path}')
+    except FileNotFoundError:
+        print(f'Database {path} not found, will be created at script end (ctrl+c)')
     except EOFError:
-        print("New database")
+        raise Exception(f'Cannot load data from {path}')
 
 
-# load faces from ./people directory
-# load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
+def persist(path=database_path):
+    """Save encodings to pickle file"""
+    all_data = {}
+
+    # Create dictionary with name -> encoding
+    for index, encoding in enumerate(known_face_encodings):
+        name = known_face_names[index]
+        all_data[name] = encoding
+
+    # save to pickle!
+    with open(path, 'wb') as f:
+        pickle.dump(all_data, f)
+    print(f'Saved {len(all_data)} encodings to {path}')
+
 
 # load encodings from database file
 load_encodings_from_database()
+
+# load faces from ./people directory
+load_faces_from_directory(join(dirname(realpath(__file__)), './people'))
 
 
 def get_identifications(frame, _faces, new_face_callback=None):
@@ -51,7 +87,7 @@ def get_identifications(frame, _faces, new_face_callback=None):
 
     # opencv is x y w h
     # dlib   is t r b l
-    faces = [(y, x+w, y+h, x) for (x, y, w, h) in _faces]
+    faces = [(y, x + w, y + h, x) for (x, y, w, h) in _faces]
 
     face_encodings = face_recognition.face_encodings(rgb_small_frame, faces)
     # we create an array that has as many places as the faces we got
@@ -64,7 +100,7 @@ def get_identifications(frame, _faces, new_face_callback=None):
         distances = face_recognition.face_distance(known_face_encodings, encoding)
 
         for dist in distances:
-            if dist < 0.6:
+            if dist < max_face_distance:
                 best_match_index = np.argmin(distances)
                 name = known_face_names[best_match_index]
                 names[index] = name
@@ -90,12 +126,3 @@ def get_identifications(frame, _faces, new_face_callback=None):
             new_face_callback(frame, faces[index], encoding, name)
 
     return names
-
-
-def persist():
-    i = 1
-    for item in known_face_encodings:
-        all_data[i] = known_face_encodings[i - 1]
-        i += 1
-    with open('./recognition/database/database.dat', 'wb') as f:
-        pickle.dump(all_data, f)
