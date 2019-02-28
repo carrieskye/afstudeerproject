@@ -6,16 +6,27 @@ import json
 
 import cv2
 
-from activation.simple import is_activated
-from annotate.simple import annotate_frame
-from cameras.laptop_cam import stream_video
-from classifier.classifier import Classifier
-from data_treatment.post_processor import get_overall_classification
-from detectors.simple import detect_face
-from person_selector.simple import select_person
-from positioning.simple import get_position
-from recognition.identify import get_identifications, persist
+# extra utils
 from utils import TimeBlock, timeblock_stats
+
+# - get frames (+timestamp) from camera
+from cameras.laptop_cam import stream_video
+# - detect people by faces
+from detectors.simple import detect_face
+# - identify every face (to improve classification over time)
+from recognition.identify import get_identifications, persist
+# - get position of each face
+from positioning.simple import get_position
+# - classify each face
+from classifier.classifier import Classifier
+# - take averages or most common
+from data_treatment.post_processor import get_overall_classification
+# - check if we are activate (can we change the screen)
+from activation.simple import is_activated
+# - select the most import labels/person to change for!
+from person_selector.simple import select_person
+# - annotate the frame for debugging
+from annotate.simple import annotate_frame
 
 # Reporting is loaded based on arguments, see main()
 reporting = None
