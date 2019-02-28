@@ -7,7 +7,7 @@
             var idleState = false;
             var idleTimer = null;
             $(document).ready(function() {
-                $('body').load('/static/torfs/'+(new URL(window.location).searchParams.get('type') || 'dames')+'.html');
+                $('body').load('/static/torfs/'+(new URL(window.location).searchParams.get('type') || 'meisjes')+'.html');
 
                 // check if user is active part
                 $('*').bind('mousemove click mouseup mousedown keydown keypress keyup submit change mouseenter scroll resize dblclick', function () {
