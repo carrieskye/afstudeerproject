@@ -6,6 +6,7 @@ green = (87, 139, 46)
 red = (60, 20, 220)
 yellow = (32, 165, 218)
 white = (255, 255, 255)
+black = (0, 0, 0)
 font = cv2.FONT_HERSHEY_DUPLEX
 
 
@@ -32,5 +33,6 @@ def annotate_frame(original_frame, faces, labels, copy=False):
 def get_colour(label):
     if label.gender == 'F':
         return red if label.age > 12 else yellow
-    else:
+    elif label.gender == 'M':
         return blue if label.age > 12 else green
+    return black
