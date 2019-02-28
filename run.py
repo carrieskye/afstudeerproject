@@ -132,7 +132,13 @@ def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
         return obj.__dict__
 
     with open(path, 'w') as f:
-        f.write(json.dumps(export, default=obj_dict))
+        f.write(json.dumps([{
+            'personId': classification.name,
+            'gender': 'MALE' if classification.gender == 'M' else 'FEMALE',
+            'emotion': classification.emotion.upper(),
+            'age': classification.age,
+            'timestamp': classification.timestamp,
+        } for classification in export], default=obj_dict))
     print(f'Saved {len(export)} classifications to {path}')
 
     raise SystemExit
