@@ -2,6 +2,7 @@ import argparse
 import importlib
 import signal
 import time
+import json
 
 import cv2
 
@@ -27,6 +28,9 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 # dictionary with person -> classifications
 people = {}
+
+# list with all classifications for daily exports
+export = []
 
 # keep track of activation, so the home page only changes if no one was before the camera in the previous frame
 was_activated = False
@@ -74,6 +78,9 @@ def every_frame(frame, timestamp):
         # append this classification
         people[name].append(classification)
 
+        # append to export
+        export.append(classification)
+
         # get average age, most common gender and last emotion
         with TimeBlock('overall'):
             overall_classification = get_overall_classification(people[name])
@@ -106,6 +113,17 @@ def every_frame(frame, timestamp):
 def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
     timeblock_stats()
     persist()
+
+    # save to json file
+    path = './dump.json'
+
+    def obj_dict(obj):
+        return obj.__dict__
+
+    with open(path, 'w') as f:
+        f.write(json.dumps(export, default=obj_dict))
+    print(f'Saved {len(export)} classifications to {path}')
+
     raise SystemExit
 
 
