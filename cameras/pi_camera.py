@@ -16,5 +16,5 @@ def stream_video(result_callback: Callable):
 
     for raw_frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
         frame = raw_frame.array
-        result_callback(frame)
+        result_callback(frame, time.time())
         raw_capture.truncate(0)
