@@ -28,7 +28,7 @@ from person_selector.simple import select_person
 # - annotate the frame for debugging
 from annotate.simple import annotate_frame
 # - periodically export to backoffice
-from export.export_periodically import log, save_to_file
+from export.export_periodically import log, save_to_file, send_to_back_office
 
 # Reporting is loaded based on arguments, see main()
 reporting = None
@@ -124,6 +124,7 @@ def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
     timeblock_stats()
     persist()
     save_to_file()
+    send_to_back_office()
     raise SystemExit
 
 
