@@ -27,6 +27,8 @@ from activation.simple import is_activated
 from person_selector.simple import select_person
 # - annotate the frame for debugging
 from annotate.simple import annotate_frame
+# - periodically export to backoffice
+from export.export_periodically import log, save_to_file
 
 # Reporting is loaded based on arguments, see main()
 reporting = None
@@ -39,9 +41,6 @@ cascadePath = './models/opencv/haarcascade_frontalface_default.xml'
 
 # dictionary with person -> classifications
 people = {}
-
-# list with all classifications for daily exports
-export = []
 
 # keep track of activation, so the home page only changes if no one was before the camera in the previous frame
 was_activated = False
@@ -90,7 +89,7 @@ def every_frame(frame, timestamp):
         people[name].append(classification)
 
         # append to export
-        export.append(classification)
+        log(classification)
 
         # get average age, most common gender and last emotion
         with TimeBlock('overall'):
@@ -124,23 +123,7 @@ def every_frame(frame, timestamp):
 def sigint_handler(*_):  # https://stackoverflow.com/a/36120113
     timeblock_stats()
     persist()
-
-    # save to json file
-    path = './dump.json'
-
-    def obj_dict(obj):
-        return obj.__dict__
-
-    with open(path, 'w') as f:
-        f.write(json.dumps([{
-            'personId': classification.name,
-            'gender': 'MALE' if classification.gender == 'M' else 'FEMALE',
-            'emotion': classification.emotion.upper(),
-            'age': classification.age,
-            'timestamp': classification.timestamp,
-        } for classification in export], default=obj_dict))
-    print(f'Saved {len(export)} classifications to {path}')
-
+    save_to_file()
     raise SystemExit
 
 
