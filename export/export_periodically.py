@@ -1,19 +1,16 @@
 import json
 from os.path import isfile
 from easygui import choicebox
+import time
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # data to export
-from urllib3.exceptions import MaxRetryError
-
 data = []
-
 scheduler = BackgroundScheduler()
-
 back_office_api = 'http://localhost:8080/api/'
-
 device_file = 'device.json'
+last_send_timestamp = time.time()
 
 
 def ask_user_for_device_selection():
@@ -29,6 +26,8 @@ def ask_user_for_device_selection():
 
 def log(item):
     data.append(item)
+    if time.time() - last_send_timestamp > 10:
+        send_to_back_office()
 
 
 def export_for_back_office():
@@ -54,25 +53,17 @@ def save_to_file(path='./dump.json'):
 
 
 def send_to_back_office():
-    # authentication
-    login = {'username': 'admin', 'rememberMe': True, 'password': 'admin'}
-    login_json = json.dumps(login, default=obj_dict)
-
-    r = requests.post(back_office_api + 'authenticate',
-                      headers={'Content-Type': 'application/json'},
-                      data=login_json)
-
-    token = str(r.json()['id_token'])
-
+    global last_send_timestamp, data
     # export data
     data_json = json.dumps(export_for_back_office(), default=obj_dict)
-    store_id = '1001'
-
-    requests.post(back_office_api + 'devices/' + store_id + '/export/',
-                  headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-                  data=data_json)
-
+    requests.post(
+        url=back_office_api + 'devices/' + device_id + '/export',
+        data=data_json,
+        headers={'Content-Type': 'application/json'}
+    )
     print(f'Saved {len(data)} classifications to Back Office')
+    last_send_timestamp = time.time()
+    data = []
 
 
 try:
@@ -100,6 +91,6 @@ except Exception as e:
     raise SystemExit
 
 
-device_id = device['id']
+device_id = str(device['id'])
 device_name = 'id={}, name={}, postalCode={}'.format(device_id, device['name'], device['postalCode'])
 print("This is device:" + device_name)
