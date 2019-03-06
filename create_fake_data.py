@@ -1,23 +1,50 @@
+import argparse
+import random
+from datetime import datetime
 from json import dumps
+
 from classifier.classification import Classification
 from positioning.simple import Position
-import random
+
+today = datetime.today().replace(hour=9,
+                                 minute=5,
+                                 second=0,
+                                 microsecond=0)
+
+parser = argparse.ArgumentParser(description="Script to create random classifications in dump.json",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument("--date",
+                    type=lambda d: datetime.strptime(d, '%Y%m%d').replace(hour=9, minute=5),
+                    default=today,
+                    help="Date for which data will be generated")
+
+parser.add_argument("--busy_rating",
+                    type=int,
+                    default=5,
+                    help="Rating for how busy the store is from 0 to 10")
+
+args = parser.parse_args()
+data_date = args.date
+busy_rating = args.busy_rating
 
 data = []
-
-timestamps = []
-
-males = [6, 8, 10, 11, 13, 14, 16, 18, 19, 21,
-         18, 17, 15, 16, 14, 16, 17, 19, 23, 25,
-         27, 29, 31, 32, 34, 32, 36, 38, 32, 29,
-         30, 27, 26, 27, 25, 24, 20, 19, 17, 14]
-
-females = [3, 5, 6, 8, 9, 11, 13, 14, 16, 17,
-           19, 20, 19, 18, 18, 17, 20, 21, 25, 27,
-           28, 32, 34, 36, 38, 40, 38, 39, 40, 41,
-           42, 43, 41, 40, 39, 37, 32, 30, 29, 24]
-
+timestamps = [x for x in range(int(datetime.timestamp(data_date)), int(datetime.timestamp(data_date)) + 39000, 900)]
 emotions = ['ANGRY', 'DISGUST', 'FEAR', 'HAPPY', 'SAD', 'SURPRISE', 'NEUTRAL']
+
+males = [1, 2, 2, 3, 4, 4, 5, 5,
+         6, 6, 7, 6, 5, 5, 4, 4,
+         4, 5, 5, 6, 6, 7, 7, 7,
+         7, 7, 7, 7, 8, 9, 9, 10,
+         10, 11, 12, 12, 11, 10, 9, 9,
+         8, 6, 5, 6]
+
+females = [0, 1, 1, 2, 2, 3, 3, 4,
+           4, 5, 5, 5, 4, 4, 4, 4,
+           5, 6, 7, 7, 8, 8, 8, 8,
+           9, 9, 9, 9, 10, 10, 10, 11,
+           11, 10, 11, 10, 9, 9, 8, 8,
+           7, 5, 5, 6]
 
 
 def export_for_back_office():
@@ -28,13 +55,6 @@ def export_for_back_office():
         'age': classification.age,
         'timestamp': classification.timestamp,
     } for classification in data]
-
-
-def generate_timestamps():
-    initial = 1551773100.000000
-    while initial < 1551808500.000000:
-        timestamps.append(initial)
-        initial += 900
 
 
 def random_emotion():
@@ -57,16 +77,17 @@ def save_to_file(path='./dump.json'):
     print(f'Saved {len(data)} classifications to {path}')
 
 
-generate_timestamps()
-
 random_position = Position(0, 0)
 random_name = 10000
 
 for index, value in enumerate(timestamps):
-    for i in range(0, males[index]):
+    random_extras = random.randint(0, busy_rating)
+    for i in range(0, males[index] * busy_rating + random_extras):
         data.append(Classification(value, random_name, random_position, 'M', random_emotion(), random_age()))
         random_name += 1
-    for i in range(0, females[index]):
+
+    random_extras = random.randint(0, busy_rating)
+    for i in range(0, females[index] * busy_rating + random_extras):
         data.append(Classification(value, random_name, random_position, 'F', random_emotion(), random_age()))
         random_name += 1
 
