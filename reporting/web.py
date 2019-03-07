@@ -83,4 +83,4 @@ server = WebSocketServer('', 5001, SimpleEcho)
 threading.Thread(target=server.serve_forever).start()
 
 # start flask server
-threading.Thread(target=app.run).start()
+threading.Thread(target=app.run, args=("0.0.0.0",)).start()
