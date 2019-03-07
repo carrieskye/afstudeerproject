@@ -26,7 +26,7 @@ def ask_user_for_device_selection():
 
 def log(item):
     data.append(item)
-    if time.time() - last_send_timestamp > 10:
+    if time.time() - last_send_timestamp > 2:
         send_to_back_office()
 
 
