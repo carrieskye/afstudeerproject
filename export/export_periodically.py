@@ -3,11 +3,9 @@ from os.path import isfile
 from easygui import choicebox
 import time
 import requests
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # data to export
 data = []
-scheduler = BackgroundScheduler()
 back_office_api = 'http://192.168.3.10:8080/api/'
 device_file = 'device.json'
 last_send_timestamp = time.time()
